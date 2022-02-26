@@ -1,10 +1,10 @@
 #include <module/communication.h>
+#include <Arduino.h>
 #include <WS2812FX.h>
-
 
 #define LED_PIN_C2     22
 #define LED_COUNT_P1   1
-#define STATUS_CHECK_INTERVAL   2000
+#define STATUS_LED_INTERVAL   2000
 
 WS2812FX ws2812fx_c2 = WS2812FX(LED_COUNT_P1, LED_PIN_C2, NEO_RGBW + NEO_KHZ800);
 
@@ -38,6 +38,8 @@ void setup()
     rp2040.resumeOtherCore();
 }
 
+
+
 void loop()
 {
     mqttService();
@@ -45,24 +47,32 @@ void loop()
 
 
 unsigned long change_color_timeout = 0;
-int i = 0;
-int colorIndexT1 = 0;
-
-uint32_t colorsT1[] = {WHITE, ULTRAWHITE, BLUE, PURPLE};
-long colorsLengthT1 = (sizeof(colorsT1)/sizeof(*colorsT1));
 bool state = false;
+
 void loop1()
 {
+    bool ms = mutex_enter_timeout_ms(&actionCore1MsgMutex, 0);
+    if (!ms) {
+        Serial.println("loop1 - mutex lock");
+    }
+    if (ms) {
+        if (!actionCore1Msgs.empty()) {
+            for (auto &action : actionCore1Msgs) {
+                Serial.println("id: " + action.ioId);
+                Serial.println("type: " + action.type);
+            }
+            actionCore1Msgs.erase(actionCore1Msgs.begin());
+//            delete &message;
+        }
+        mutex_exit(&actionCore1MsgMutex);
+    }
 
     if ((millis() > change_color_timeout) || (change_color_timeout == 0))
     {
         state = !state;
         digitalWrite(LED_BUILTIN, state);
-        ws2812fx_c2.setColor(colorsT1[colorIndexT1]);
-        colorIndexT1++;
-        if (colorIndexT1 >= colorsLengthT1) colorIndexT1 = 0;
-
-        change_color_timeout = millis() + STATUS_CHECK_INTERVAL;
+        change_color_timeout = millis() + STATUS_LED_INTERVAL;
     }
+
     ws2812fx_c2.service();
 }

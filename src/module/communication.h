@@ -4,24 +4,26 @@
 
 #ifndef IO_DRIVER_COMMUNICATION_H
 #define IO_DRIVER_COMMUNICATION_H
-#include <Arduino.h>
+
 #include "./defines.h"
-#include <PubSubClient.h>
-#include <aJSON.h>
 
 
-    extern const char* mqttServer;
-    extern const IPAddress IP;
-    extern const IPAddress DNS;
-    extern byte MAC[];
+extern const char *ACTION_TOPIC;
+extern mutex_t actionCore1MsgMutex;
+extern std::vector<Action> actionCore0Msgs;
+extern std::vector<Action> actionCore1Msgs;
 
-    void setupMqtt();
+void setupMqtt();
 
-    void reconnectMqtt();
+void reconnectMqtt();
 
-    void actionTopicCallback(char* topic, byte* payload, unsigned int length);
+void actionTopicCallback(char *topic, byte *payload, unsigned int length);
 
-    void mqttService();
+void mqttService();
+
+void addToCore1Mutex(const Action& action);
+
+void parseBytes(const char *str, char sep, byte *bytes, int maxBytes, int base);
 
 
 #endif //IO_DRIVER_COMMUNICATION_H
