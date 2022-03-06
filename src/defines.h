@@ -10,7 +10,7 @@
 #include "pico/stdlib.h"
 #include <ArduinoJson.h>
 #include "pico/multicore.h"
-#include "objects/Action.h"
+#include "objects/comunication/Action.h"
 
 
 #define ST(A) #A

@@ -23,6 +23,8 @@ void mqttService();
 
 void addToCore1Mutex(const Action& action);
 
+void resetENC();
+
 void parseBytes(const char *str, char sep, byte *bytes, int maxBytes, int base);
 
 
