@@ -30,4 +30,4 @@ add_custom_target(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-add_executable(Z_DUMMY_TARGET ${SRC_LIST} src/objects/iot/IotDevices.cpp src/objects/iot/IotDevices.h src/objects/iot/rgb/RgbwLight.cpp src/objects/iot/rgb/RgbwLight.h src/objects/iot/rgb/RgbLight.cpp src/objects/iot/rgb/RgbLight.h src/objects/iot/Device.cpp src/objects/iot/Device.h src/objects/iot/IThings.cpp src/objects/iot/IThings.h src/objects/iot/neo/NeoLight.cpp src/objects/iot/neo/NeoLight.h src/objects/comunication/Color.cpp src/objects/comunication/Color.h)
+add_executable(Z_DUMMY_TARGET ${SRC_LIST} src/objects/iot/IotDevices.cpp src/objects/iot/IotDevices.h src/objects/iot/rgb/RgbwLight.cpp src/objects/iot/rgb/RgbwLight.h src/objects/iot/rgb/RgbLight.cpp src/objects/iot/rgb/RgbLight.h src/objects/iot/Device.cpp src/objects/iot/Device.h src/objects/iot/IThings.cpp src/objects/iot/IThings.h src/objects/iot/neo/NeoLight.cpp src/objects/iot/neo/NeoLight.h src/objects/comunication/Color.cpp src/objects/comunication/Color.h src/objects/change/RgbwChange.cpp src/objects/change/RgbwChange.h)

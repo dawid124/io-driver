@@ -15,14 +15,12 @@ private:
     uint8_t pinR;
     uint8_t pinG;
     uint8_t pinB;
-
-    uint8_t R;
-    uint8_t G;
-    uint8_t B;
 protected:
     SX1509 io;
 public:
-
+    int R;
+    int G;
+    int B;
 
     RgbLight(const String& id, SX1509 &io, uint8_t pinR, uint8_t pinG, uint8_t pinB);
 

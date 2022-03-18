@@ -15,24 +15,6 @@ mutex_t actionCore1MsgMutex;
 std::vector<Action> actionCore0Msgs;
 std::vector<Action> actionCore1Msgs;
 
-#ifdef __arm__
-// should use uinstd.h to define sbrk but Due causes a conflict
-extern "C" char* sbrk(int incr);
-#else  // __ARM__
-extern char *__brkval;
-#endif  // __arm__
-
-int freeMemory() {
-    char top;
-#ifdef __arm__
-    return &top - reinterpret_cast<char*>(sbrk(0));
-#elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
-    return &top - __brkval;
-#else  // __arm__
-  return __brkval ? &top - __brkval : &top - __malloc_heap_start;
-#endif  // __arm__
-}
-
 void setupMqtt() {
     Serial.print("\nStart MQTTClient init ");
 
@@ -92,7 +74,6 @@ void resetENC() {
 Action deserializeAction(const JsonObject &action);
 
 void actionTopicCallback(char* topic, byte* payload, unsigned int length) {
-    Serial.println("freeMemory: " + String(freeMemory()));
     try {
         Serial.print("Message arrived [");
         Serial.print(topic);
@@ -134,13 +115,13 @@ void actionTopicCallback(char* topic, byte* payload, unsigned int length) {
 
 Action deserializeAction(const JsonObject &action) {
     const String &ioId = action.getMember("ioId").as<String>();
-    Serial.println("ioId: " + String(ioId));
     const String &ioType = action.getMember("ioType").as<String>();
     const String &ioAction = action.getMember("action").as<String>();
     const uint8_t &brightness = action.getMember("brightness").as<uint8_t>();
-    const uint8_t &animationId = action.getMember("animationId").as<uint8_t>();
-    const uint8_t &speed = action.getMember("speed").as<uint8_t>();
-    const uint8_t &time = action.getMember("time").as<uint8_t>();
+    const int &animationId = action.getMember("animationId").as<int>();
+    const int &speed = action.getMember("speed").as<int>();
+    const int &time = action.getMember("time").as<int>();
+    const int &stepTime = action.getMember("stepTime").as<int>();
 
     Color ioColor;
     const JsonObject &color = action.getMember("color").as<JsonObject>();
@@ -151,7 +132,7 @@ Action deserializeAction(const JsonObject &action) {
         ioColor.w = color.getMember("w").as<uint8_t>();
     }
 
-    Action actionObj(ioId, ioType, ioAction, ioColor, brightness, animationId, speed, time);
+    Action actionObj(ioId, ioType, ioAction, ioColor, brightness, animationId, speed, time, stepTime);
     return actionObj;
 }
 

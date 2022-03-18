@@ -31,6 +31,10 @@ public:
     void initializeExpander(SX1509 &expander, byte address);
 
     void printDevices();
+
+    RgbLight* getRgbById(String id);
+    RgbwLight* getRgbwById(String id);
+    NeoLight* getNeoById(String id);
 };
 
 

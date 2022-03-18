@@ -5,6 +5,6 @@
 #include "Action.h"
 
 Action::Action(const String &ioId, const String &ioType, String action, const Color &color, uint8_t brightness,
-               int animationId, int speed, int time) : ioId(ioId), ioType(ioType), action(action), color(color),
+               int animationId, int speed, int time, int stepTime) : ioId(ioId), ioType(ioType), action(action), color(color),
                                                        brightness(brightness), animationId(animationId), speed(speed),
-                                                       time(time) {}
+                                                       time(time), stepTime(stepTime) {}

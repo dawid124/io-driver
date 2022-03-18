@@ -14,8 +14,8 @@ private:
     uint16_t ledCount;
     neoPixelType type;
     uint8_t pin;
-    WS2812FX ws2812fx;
 public:
+    WS2812FX ws2812fx;
     NeoLight(const String& id, uint8_t pin, uint16_t ledCount, neoPixelType type);
     void service();
 };

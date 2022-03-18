@@ -10,6 +10,10 @@ RgbLight::RgbLight(const String& id, SX1509 &io, uint8_t pinR, uint8_t pinG, uin
     G = 0;
     B = 0;
 
+    io.analogWrite(pinR, 0);
+    io.analogWrite(pinG, 0);
+    io.analogWrite(pinB, 0);
+
     io.pinMode(pinR, ANALOG_OUTPUT);
     io.pinMode(pinG, ANALOG_OUTPUT);
     io.pinMode(pinB, ANALOG_OUTPUT);

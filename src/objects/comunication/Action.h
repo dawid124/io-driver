@@ -20,9 +20,10 @@ public:
     int animationId;
     int speed;
     int time;
+    int stepTime;
 
     Action(const String &ioId, const String &ioType, String action, const Color &color, uint8_t brightness,
-           int animationId, int speed, int time);
+           int animationId, int speed, int time, int stepTime);
 };
 
 

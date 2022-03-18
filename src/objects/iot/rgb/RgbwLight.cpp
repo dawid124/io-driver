@@ -8,6 +8,7 @@ RgbwLight::RgbwLight(const String& id, SX1509 &io, uint8_t pinR, uint8_t pinG, u
         : RgbLight(id, io, pinR, pinG, pinB), pinW(pinW) {
     W = 0;
 
+    io.analogWrite(pinW, 0);
     io.pinMode(pinW, ANALOG_OUTPUT);
 }
 

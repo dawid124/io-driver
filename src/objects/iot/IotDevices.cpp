@@ -28,7 +28,7 @@ void IotDevices::setupDevices() {
     rgbw.push_back(new RgbwLight("rgbw-office", ioExpanderA, 8, 9, 10, 11));
     rgbw.push_back(new RgbwLight("rgbw-kitchen", ioExpanderA, 12, 13, 14, 15));
 
-    neo.push_back(new NeoLight("neo-kitchen", 14, 300, NEO_RGBW + NEO_KHZ800));
+    neo.push_back(new NeoLight("neo-kitchen", 13, 300, NEO_RGBW + NEO_KHZ800));
 }
 
 void IotDevices::printDevices() {
@@ -50,4 +50,31 @@ void IotDevices::printDevices() {
         Serial.println(String(i) + ": " + device->id);
         i++;
     }
+}
+
+RgbLight* IotDevices::getRgbById(String id) {
+    for (auto io: rgb) {
+        if (io->id == id) {
+            return io;
+        }
+    }
+    return nullptr;
+}
+
+RgbwLight *IotDevices::getRgbwById(String id) {
+    for (auto io: rgbw) {
+        if (io->id == id) {
+            return io;
+        }
+    }
+    return nullptr;
+}
+
+NeoLight *IotDevices::getNeoById(String id) {
+    for (auto io: neo) {
+        if (io->id == id) {
+            return io;
+        }
+    }
+    return nullptr;
 }
