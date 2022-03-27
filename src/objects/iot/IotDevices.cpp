@@ -28,7 +28,14 @@ void IotDevices::setupDevices() {
     rgbw.push_back(new RgbwLight("rgbw-office", ioExpanderA, 8, 9, 10, 11));
     rgbw.push_back(new RgbwLight("rgbw-kitchen", ioExpanderA, 12, 13, 14, 15));
 
-    neo.push_back(new NeoLight("neo-kitchen", 13, 300, NEO_RGBW + NEO_KHZ800));
+    neo.push_back(new NeoLight("neo-kitchen", 15, 98, NEO_RGBW + NEO_KHZ800));
+    neo.push_back(new NeoLight("neo-celling", 14, 220, NEO_RGBW + NEO_KHZ800));
+    neo.push_back(new NeoLight("neo-test", 13, 300, NEO_RGBW + NEO_KHZ800));
+
+    motionSensors.push_back(new MotionSensor("pir-office", 7));
+    motionSensors.push_back(new MotionSensor("pir-lobby", 8));
+    motionSensors.push_back(new MotionSensor("pir-wc", 9));
+    motionSensors.push_back(new MotionSensor("pir-kitchen", 10));
 }
 
 void IotDevices::printDevices() {

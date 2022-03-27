@@ -8,6 +8,7 @@
 #include <Arduino.h>
 #include <WS2812FX.h>
 #include <SparkFunSX1509.h>
+#include <objects/iot/sensor/MotionSensor.h>
 #include "Device.h"
 #include "rgb/RgbLight.h"
 #include "rgb/RgbwLight.h"
@@ -18,6 +19,7 @@ public:
     std::vector<RgbLight*> rgb;
     std::vector<RgbwLight*> rgbw;
     std::vector<NeoLight*> neo;
+    std::vector<MotionSensor*> motionSensors;
 
     SX1509 ioExpanderA;
     SX1509 ioExpanderB;

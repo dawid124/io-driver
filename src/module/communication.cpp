@@ -7,6 +7,7 @@
 #define ETH_RESET_PIN 20
 
 const char* ACTION_TOPIC = STR(MQTT_ACTION_TOPIC);
+const char* TRIGGER_TOPIC = STR(MQTT_TRIGGER_TOPIC);
 
 EthernetClient  ethClient;
 PubSubClient    client(ethClient);
@@ -86,7 +87,7 @@ void actionTopicCallback(char* topic, byte* payload, unsigned int length) {
 //
 //        Serial.println();
 
-        StaticJsonDocument<1024> doc;
+        StaticJsonDocument<2048> doc;
 
 
         DeserializationError error =  deserializeJson(doc, payload, length);
@@ -168,5 +169,22 @@ void parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) 
             break;
         }
         str++;
+    }
+}
+
+void publishSensor(const String& id, bool state) {
+    if (client.connected()) {
+        StaticJsonDocument<64> doc;
+
+        doc["id"] = id;
+        Serial.println("state " + String(state));
+        doc["state"] = state;
+
+        char buffer[64];
+        serializeJson(doc, buffer);
+
+        client.publish(TRIGGER_TOPIC, buffer);
+    } else {
+        reconnectMqtt();
     }
 }

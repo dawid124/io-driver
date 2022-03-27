@@ -3,6 +3,7 @@
 #include <objects/iot/IotDevices.h>
 #include <arduino-timer.h>
 #include <objects/change/RgbwChange.h>
+#include <objects/change/NeoChange.h>
 
 #define STATUS_LED_INTERVAL   2000
 
@@ -30,51 +31,6 @@ void setup()
 
     pinMode(LED_BUILTIN, OUTPUT);
 
-    pinMode(28, INPUT);
-    digitalWrite(28, LOW);
-    pinMode(27, INPUT);
-    digitalWrite(27, LOW);
-    pinMode(26, INPUT);
-    digitalWrite(26, LOW);
-    pinMode(22, INPUT);
-    digitalWrite(22, LOW);
-    pinMode(21, INPUT);
-    digitalWrite(21, LOW);
-
-
-//    while (true) {
-//        PinStatus read = digitalRead(28);
-//
-//        if (read == HIGH) {
-//            Serial.println("HIGH 28");
-//        }
-//
-//        read = digitalRead(27);
-//
-//        if (read == HIGH) {
-//            Serial.println("HIGH 27");
-//        }
-//
-//        read = digitalRead(26);
-//
-//        if (read == HIGH) {
-//            Serial.println("HIGH 26");
-//        }
-//
-//        read = digitalRead(22);
-//
-//        if (read == HIGH) {
-//            Serial.println("HIGH 22");
-//        }
-//
-//        read = digitalRead(21);
-//
-//        if (read == HIGH) {
-//            Serial.println("HIGH 21");
-//        }
-//    }
-
-
     rp2040.resumeOtherCore();
     Serial.println("configuration finished");
 }
@@ -86,11 +42,14 @@ bool rgbwChange(RgbwChange *change) {
 void processRgbwAction(const Action &action, RgbwLight& light) {
 
     Color color = action.color;
+    Serial.println("brightness: " + String(action.brightness));
+    color.setBrightness(action.brightness);
     int stepTime = CHANGE_MILLIS;
     if (action.stepTime > 0) {
         stepTime = action.stepTime;
     }
     int steps = (int) action.time / stepTime;
+
     timer0.every(stepTime, rgbwChange, new RgbwChange(color, steps, &light));
 }
 
@@ -118,13 +77,18 @@ void loop()
         }
         actionCore0Msgs.erase(actionCore0Msgs.begin());
     }
+
+    for (auto &sensor : devices.motionSensors) {
+        if (sensor->check() != NOT_CHANGED) {
+            Serial.println(String(sensor->id) + ": " + String(sensor->currentState));
+            publishSensor(sensor->id, sensor->currentState);
+        }
+    }
 }
 
-
-unsigned long change_color_timeout = 0;
-bool state = false;
-
-void picoLight();
+bool neoChange(NeoChange *change) {
+    return change->nextStep();
+}
 
 void processActionCore1(const Action &action) {
     NeoLight *neo = devices.getNeoById(action.ioId);
@@ -134,17 +98,27 @@ void processActionCore1(const Action &action) {
         neo->ws2812fx.stop();
     } else if (action.action == "CHANGE") {
         neo->ws2812fx.setBrightness(action.brightness);
+        neo->ws2812fx.setColor(action.color.r, action.color.g, action.color.b, action.color.w);
         neo->ws2812fx.setMode(action.animationId);
         neo->ws2812fx.setSpeed(action.speed);
-        neo->ws2812fx.setColor(action.color.r, action.color.g, action.color.b, action.color.w);
         if (!neo->ws2812fx.isRunning()) {
             neo->ws2812fx.start();
         }
     }
 }
+unsigned long change_color_timeout = 0;
+bool state = false;
 
-void loop1()
-{
+void picoLight() {
+    if ((millis() > change_color_timeout) || (change_color_timeout == 0))
+    {
+        state = !state;
+        digitalWrite(LED_BUILTIN, state);
+        change_color_timeout = millis() + STATUS_LED_INTERVAL;
+    }
+}
+
+void loop1() {
     picoLight();
 
     bool ms = mutex_enter_timeout_ms(&actionCore1MsgMutex, 0);
@@ -158,17 +132,8 @@ void loop1()
         mutex_exit(&actionCore1MsgMutex);
     }
 
-    for (auto const& neo: devices.neo) {
+    for (auto const &neo: devices.neo) {
 //        Serial.println(String(neo->ws2812fx.isRunning()));
         neo->service();
-    }
-}
-
-void picoLight() {
-    if ((millis() > change_color_timeout) || (change_color_timeout == 0))
-    {
-        state = !state;
-        digitalWrite(LED_BUILTIN, state);
-        change_color_timeout = millis() + STATUS_LED_INTERVAL;
     }
 }

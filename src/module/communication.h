@@ -25,6 +25,8 @@ void addToCore1Mutex(const Action& action);
 
 void resetENC();
 
+void publishSensor(const String& id, bool state);
+
 void parseBytes(const char *str, char sep, byte *bytes, int maxBytes, int base);
 
 
