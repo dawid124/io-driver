@@ -24,6 +24,7 @@ RgbwChange::RgbwChange(const Color &color, int steps, RgbwLight *light) : color(
 bool RgbwChange::nextStep() {
     if (steps == 0) {
         light->color(color.r, color.g, color.b, color.w);
+        light->task = (uintptr_t)(NULL);
         return false;
     }
 

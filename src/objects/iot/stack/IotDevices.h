@@ -9,10 +9,10 @@
 #include <WS2812FX.h>
 #include <SparkFunSX1509.h>
 #include <objects/iot/sensor/MotionSensor.h>
-#include "Device.h"
-#include "rgb/RgbLight.h"
-#include "rgb/RgbwLight.h"
-#include "neo/NeoLight.h"
+#include "objects/iot/Device.h"
+#include "objects/iot/rgb/RgbLight.h"
+#include "objects/iot/rgb/RgbwLight.h"
+#include "objects/iot/neo/NeoLight.h"
 
 class IotDevices {
 public:

@@ -16,6 +16,7 @@ void IotDevices::init() {
 
 void IotDevices::initializeExpander(SX1509 &expander, byte address) {
     if (expander.begin(address)) {
+        expander.clock(INTERNAL_CLOCK_2MHZ, 5); // 6, 5, 4
         Serial.println("Successful initialize ioExpander on address: " + String(address));
     } else {
         Serial.println("Not initialize ioExpander on address: " + String(address));
@@ -27,10 +28,11 @@ void IotDevices::setupDevices() {
     rgbw.push_back(new RgbwLight("rgbw-dinner", ioExpanderA, 4, 5, 6, 7));
     rgbw.push_back(new RgbwLight("rgbw-office", ioExpanderA, 8, 9, 10, 11));
     rgbw.push_back(new RgbwLight("rgbw-kitchen", ioExpanderA, 12, 13, 14, 15));
+//
+    rgbw.push_back(new RgbwLight("rgbw-lobby", ioExpanderB, 8, 9, 10, 11));
 
-    neo.push_back(new NeoLight("neo-kitchen", 15, 98, NEO_RGBW + NEO_KHZ800));
-    neo.push_back(new NeoLight("neo-celling", 14, 220, NEO_RGBW + NEO_KHZ800));
-    neo.push_back(new NeoLight("neo-test", 13, 300, NEO_RGBW + NEO_KHZ800));
+    neo.push_back(new NeoLight("neo-kitchen", 12, 98, NEO_RGBW + NEO_KHZ800));
+    neo.push_back(new NeoLight("neo-celling", 13, 300, NEO_RGBW + NEO_KHZ800));
 
     motionSensors.push_back(new MotionSensor("pir-office", 7));
     motionSensors.push_back(new MotionSensor("pir-lobby", 8));

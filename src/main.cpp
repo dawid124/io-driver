@@ -1,6 +1,6 @@
 #include <module/communication.h>
 #include <Arduino.h>
-#include <objects/iot/IotDevices.h>
+#include <objects/iot/stack/IotDevices.h>
 #include <arduino-timer.h>
 #include <objects/change/RgbwChange.h>
 #include <objects/change/NeoChange.h>
@@ -41,8 +41,12 @@ bool rgbwChange(RgbwChange *change) {
 
 void processRgbwAction(const Action &action, RgbwLight& light) {
 
+    if (light.task != (uintptr_t)(NULL)) {
+        timer0.cancel(light.task);
+    }
+
     Color color = action.color;
-    Serial.println("brightness: " + String(action.brightness));
+
     color.setBrightness(action.brightness);
     int stepTime = CHANGE_MILLIS;
     if (action.stepTime > 0) {
@@ -50,7 +54,7 @@ void processRgbwAction(const Action &action, RgbwLight& light) {
     }
     int steps = (int) action.time / stepTime;
 
-    timer0.every(stepTime, rgbwChange, new RgbwChange(color, steps, &light));
+    light.task = timer0.every(stepTime, rgbwChange, new RgbwChange(color, steps, &light));
 }
 
 void processActionCore0(const Action &action) {
@@ -84,10 +88,6 @@ void loop()
             publishSensor(sensor->id, sensor->currentState);
         }
     }
-}
-
-bool neoChange(NeoChange *change) {
-    return change->nextStep();
 }
 
 void processActionCore1(const Action &action) {

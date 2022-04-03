@@ -7,6 +7,7 @@
 #define ETH_RESET_PIN 20
 
 const char* ACTION_TOPIC = STR(MQTT_ACTION_TOPIC);
+const char* DEVICE_NAME_STR = STR(DEVICE_NAME);
 const char* TRIGGER_TOPIC = STR(MQTT_TRIGGER_TOPIC);
 
 EthernetClient  ethClient;
@@ -54,11 +55,12 @@ void reconnectMqtt()
         Serial.print("Attempting MQTT connection to ");
         Serial.println(STR(MQTT_SERVER));
 
-        if (client.connect(STR(DEVICE_NAME))) {
+        if (client.connect(DEVICE_NAME_STR)) {
             Serial.println("...connected");
             String data = "Hello from MQTTClient_SSL on " + String(BOARD_NAME);
-            client.publish(ACTION_TOPIC, data.c_str());
-            client.subscribe(ACTION_TOPIC);
+            String topic = ACTION_TOPIC + String("/") + DEVICE_NAME_STR;
+            client.publish(topic.c_str(), data.c_str());
+            client.subscribe(topic.c_str());
         } else {
             Serial.println("...failed, rc=" + String(client.state()) + " try again in 2 seconds ");
             sleep_ms(2000);

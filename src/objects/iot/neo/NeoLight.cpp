@@ -10,8 +10,8 @@ NeoLight::NeoLight(const String& id, uint8_t pin, uint16_t ledCount, neoPixelTyp
     ws2812fx.begin();
     ws2812fx.setBrightness(0);
     ws2812fx.setSpeed(1000);
-    ws2812fx.setColor(0,0,0,0);
-    ws2812fx.setMode(FX_MODE_RAINBOW);
+    ws2812fx.setColor(0,0,0,255);
+    ws2812fx.setMode(FX_MODE_STATIC);
 //    ws2812fx.start();
 }
 
