@@ -22,7 +22,7 @@ public:
     std::vector<RgbLight*> rgb;
     std::vector<RgbwLight*> rgbw;
     std::vector<MotionSensor*> motionSensors;
-    Timer<16, millis, RgbwChange*> timer;
+    Timer<20, millis, RgbwChange*> timer;
 
     SX1509 ioExpanderA;
     SX1509 ioExpanderB;

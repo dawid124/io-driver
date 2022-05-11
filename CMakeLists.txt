@@ -30,4 +30,4 @@ add_custom_target(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-add_executable(Z_DUMMY_TARGET ${SRC_LIST} src/objects/iot/sensor/MotionSensor.cpp src/objects/iot/sensor/MotionSensor.h src/objects/iot/stack/Core1Devices.cpp src/objects/iot/stack/Core1Devices.h)
+add_executable(Z_DUMMY_TARGET ${SRC_LIST})

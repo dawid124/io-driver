@@ -16,7 +16,12 @@ private:
     uint8_t pin;
 public:
     WS2812FX ws2812fx;
-    NeoLight(const String& id, uint8_t pin, uint16_t ledCount, neoPixelType type);
+    std::vector<WS2812FX> collection;
+    NeoLight(const String& id, uint8_t pin, uint16_t ledCount, neoPixelType type, bool reverse);
+
+//    NeoLight(const String& id, uint8_t pin, uint16_t ledCount, neoPixelType type,
+//             const std::vector<WS2812FX> &collection);
+
     void service();
 };
 

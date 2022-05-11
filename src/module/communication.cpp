@@ -133,6 +133,7 @@ Action deserializeAction(const JsonObject &action) {
         ioColor.g = color.getMember("g").as<uint8_t>();
         ioColor.b = color.getMember("b").as<uint8_t>();
         ioColor.w = color.getMember("w").as<uint8_t>();
+        ioColor.ww = color.getMember("ww").as<uint8_t>();
     }
 
     Action actionObj(ioId, ioType, ioAction, ioColor, brightness, animationId, speed, time, stepTime);

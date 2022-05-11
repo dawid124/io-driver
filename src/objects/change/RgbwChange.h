@@ -19,11 +19,13 @@ private:
     float gStep;
     float bStep;
     float wStep;
+    float wwStep;
 
     float rVal;
     float gVal;
     float bVal;
     float wVal;
+    float wwVal;
 public:
     RgbwChange(const Color &color, int steps, RgbwLight *light);
     bool nextStep();

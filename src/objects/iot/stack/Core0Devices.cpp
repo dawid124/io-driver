@@ -21,16 +21,18 @@ void Core0Devices::initializeExpander(SX1509 &expander, byte address) {
 }
 
 void Core0Devices::setupDevices() {
+// 1111
     rgbw.push_back(new RgbwLight("rgbw-tv", ioExpanderA, 0, 1, 2, 3));
     rgbw.push_back(new RgbwLight("rgbw-dinner", ioExpanderA, 4, 5, 6, 7));
     rgbw.push_back(new RgbwLight("rgbw-office", ioExpanderA, 8, 9, 10, 11));
     rgbw.push_back(new RgbwLight("rgbw-kitchen", ioExpanderA, 12, 13, 14, 15));
 
     rgbw.push_back(new RgbwLight("rgbw-lobby", ioExpanderB, 8, 9, 10, 11));
+    rgbw.push_back(new RgbwLight("rgbww-kitchen", ioExpanderB, 7, 6, 5, 4, 3));
 
     motionSensors.push_back(new MotionSensor("pir-office", 7));
     motionSensors.push_back(new MotionSensor("pir-lobby", 8));
-    motionSensors.push_back(new MotionSensor("pir-wc", 9));
+//    motionSensors.push_back(new MotionSensor("pir-wc", 9));
     motionSensors.push_back(new MotionSensor("pir-kitchen", 10));
 
     printDevices();
@@ -68,6 +70,7 @@ RgbwLight *Core0Devices::getRgbwById(String id) {
     }
     return nullptr;
 }
+
 
 void Core0Devices::process(const Action &action) {
     if (action.ioType == "RGBW") {

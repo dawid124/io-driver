@@ -15,10 +15,13 @@ public:
     uint8_t g;
     uint8_t b;
     uint8_t w;
+    uint8_t ww;
 
     Color(uint8_t r, uint8_t g, uint8_t b);
 
     Color(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
+
+    Color(uint8_t r, uint8_t g, uint8_t b, uint8_t w, uint8_t ww);
 
     Color();
 

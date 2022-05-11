@@ -5,9 +5,17 @@
 #include "Core1Devices.h"
 
 void Core1Devices::setupDevices() {
-    neo.push_back(new NeoLight("neo-kitchen", 12, 98, NEO_RGBW + NEO_KHZ800));
-    neo.push_back(new NeoLight("neo-celling", 13, 300, NEO_RGBW + NEO_KHZ800));
+//    111
+//    neo.push_back(new NeoLight("neo-kitchen", 12, 98, NEO_RGBW + NEO_KHZ800, false));
+    neo.push_back(new NeoLight("neo-celling", 13, 225, NEO_RGBW + NEO_KHZ800, false));
+//    neo.push_back(new NeoLight("neo-tv", 11, 133, NEO_RGBW + NEO_KHZ800, true));
 
+//    2222
+//    neo.push_back(new NeoLight("neo-wall-1", 15, 121, NEO_GRB + NEO_KHZ800));
+//    neo.push_back(new NeoLight("neo-wall-2", 12, 121, NEO_GRB + NEO_KHZ800));
+//    neo.push_back(new NeoLight("neo-wall-3", 10, 121, NEO_GRB + NEO_KHZ800));
+//    neo.push_back(new NeoLight("neo-wall-4", 7, 121, NEO_GRB + NEO_KHZ800));
+//    neo.push_back(new NeoLight("neo-wall-5", 14, 121, NEO_GRB + NEO_KHZ800));
     printDevices();
 }
 
