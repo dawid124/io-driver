@@ -10,10 +10,14 @@
 #include "pico/stdlib.h"
 #include <ArduinoJson.h>
 #include "pico/multicore.h"
+
+
+//#define APP_DEBUG
+
+
 #include "objects/comunication/Action.h"
-
-
 #define ST(A) #A
+
 #define STR(A) ST(A)
 
 #define USE_THIS_SS_PIN       17

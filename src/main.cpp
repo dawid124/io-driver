@@ -12,8 +12,8 @@ Core1Devices core1Devices;
 void processSensors();
 
 void init() {
-    Serial.print("\nStart Initializing ");
-    Serial.println(STR(DEVICE_NAME));
+    Logger::printlnCore0("\nStart Initializing ");
+    Logger::printlnCore0(STR(DEVICE_NAME));
 
     sleep_ms(1000);
     setupMqtt();
@@ -41,23 +41,24 @@ void setup()
 
 void loop()
 {
+//    int startMicros = millis();
     mqttService();
     core0Devices.service();
 
-    if (!actionCore0Msgs.empty()) {
-        for (auto &action : actionCore0Msgs) {
-            core0Devices.process(action);
-        }
-        actionCore0Msgs.erase(actionCore0Msgs.begin());
+    if (actionCore0Msgs.rear > 0) {
+        Action *pAction = actionCore0Msgs.queueDequeue();
+        core0Devices.process(pAction);
+        delete pAction;
     }
 
     processSensors();
+//    Serial.println("\n" + String(millis() - startMicros));
 }
 
 void processSensors() {
     for (auto &sensor : core0Devices.motionSensors) {
         if (sensor->check() != NOT_CHANGED) {
-            Serial.println(String(sensor->id) + ": " + String(sensor->currentState));
+            Logger::printlnCore0(String(sensor->id) + ": " + String(sensor->currentState));
             publishSensor(sensor->id, sensor->currentState);
         }
     }
@@ -66,14 +67,30 @@ void processSensors() {
 void loop1() {
     core1Devices.service();
 
-    bool ms = mutex_enter_timeout_ms(&actionCore1MsgMutex, 0);
-    if (ms) {
-        if (!actionCore1Msgs.empty()) {
-            for (auto &action : actionCore1Msgs) {
-                core1Devices.process(action);
-            }
-            actionCore1Msgs.erase(actionCore1Msgs.begin());
+    if (mutex_enter_timeout_ms(&actionCore1MsgMutex, 0)) {
+
+        while (actionCore1Msgs.rear > 0) {
+//            Logger::printlnCore1("Start Processing: ");
+            Action* pAction = actionCore1Msgs.queueDequeue();
+            core1Devices.process(pAction);
+            delete pAction;
         }
+//        if (actionCore1Msgs.rear > 0) {
+//            Action* pAction = actionCore1Msgs.queueDequeue();
+//            core1Devices.process(pAction);
+//            delete pAction;
+//        }
+
+//        if (!actionCore1Msgs.empty()) {
+//
+//            Action *pAction = actionCore1Msgs.front();
+//            core1Devices.process(pAction);
+//
+//            delete pAction;
+//            actionCore1Msgs.erase(actionCore1Msgs.begin());
+//        }
         mutex_exit(&actionCore1MsgMutex);
     }
+
+
 }

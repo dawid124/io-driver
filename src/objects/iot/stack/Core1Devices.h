@@ -9,6 +9,7 @@
 #include <WS2812FX.h>
 #include <objects/comunication/Action.h>
 #include "objects/iot/neo/NeoLight.h"
+#include "module/logger.h"
 
 #define STATUS_LED_INTERVAL   2000
 

@@ -14,9 +14,9 @@ void Core0Devices::init() {
 void Core0Devices::initializeExpander(SX1509 &expander, byte address) {
     if (expander.begin(address)) {
         expander.clock(INTERNAL_CLOCK_2MHZ, 5); // 6, 5, 4
-        Serial.println("Successful initialize ioExpander on address: " + String(address));
+        Logger::printlnCore0("Successful initialize ioExpander on address: " + String(address));
     } else {
-        Serial.println("Not initialize ioExpander on address: " + String(address));
+        Logger::printlnCore0("Not initialize ioExpander on address: " + String(address));
     }
 }
 
@@ -40,15 +40,15 @@ void Core0Devices::setupDevices() {
 
 void Core0Devices::printDevices() {
     int i = 0;
-    Serial.println("Initialized devices RGB: ");
+    Logger::printlnCore0("Initialized devices RGB: ");
     for (auto const& device: rgb) {
-        Serial.println(String(i) + ": " + device->id);
+        Logger::printlnCore0(String(i) + ": " + device->id);
         i++;
     }
     i = 0;
-    Serial.println("Initialized devices RGBW: ");
+    Logger::printlnCore0("Initialized devices RGBW: ");
     for (auto const& device: rgbw) {
-        Serial.println(String(i) + ": " + device->id);
+        Logger::printlnCore0(String(i) + ": " + device->id);
         i++;
     }
 }
@@ -100,11 +100,13 @@ void Core0Devices::processRgbwAction(const Action &action, RgbwLight &light) {
     }
     int steps = (int) action.time / stepTime;
 
-    light.task = timer.every(stepTime, rgbwChange, new RgbwChange(color, steps, &light));
+    auto *rgbwChangePtr = new RgbwChange(color, steps, &light);
+    light.task = timer.every(stepTime, rgbwChange, rgbwChangePtr);
 }
 
 bool Core0Devices::rgbwChange(RgbwChange *change) {
-    return change->nextStep();
+    bool hasNext = change->nextStep();
+    return hasNext;
 }
 
 void Core0Devices::service() {

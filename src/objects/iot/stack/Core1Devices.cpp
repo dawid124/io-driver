@@ -21,9 +21,9 @@ void Core1Devices::setupDevices() {
 
 void Core1Devices::printDevices() {
     int i = 0;
-    Serial.println("Initialized devices NEO: ");
+    Logger::printlnCore1("Initialized devices NEO: ");
     for (auto const& device: neo) {
-        Serial.println(String(i) + ": " + device->id);
+        Logger::printlnCore1(String(i) + ": " + device->id);
         i++;
     }
 }
@@ -37,19 +37,41 @@ NeoLight *Core1Devices::getNeoById(String id) {
     return nullptr;
 }
 
-void Core1Devices::process(const Action &action) {
-    NeoLight *neo = getNeoById(action.ioId);
-    if (action.action == "ON") {
-        neo->ws2812fx.start();
-    } else if (action.action == "OFF") {
-        neo->ws2812fx.stop();
-    } else if (action.action == "CHANGE") {
-        neo->ws2812fx.setBrightness(action.brightness);
-        neo->ws2812fx.setColor(action.color.r, action.color.g, action.color.b, action.color.w);
-        neo->ws2812fx.setMode(action.animationId);
-        neo->ws2812fx.setSpeed(action.speed);
-        if (!neo->ws2812fx.isRunning()) {
-            neo->ws2812fx.start();
+void Core1Devices::process(Action *action) {
+    NeoLight *neoItem = getNeoById(action->ioId);
+//
+//    Logger::printlnCore1("process: " + String(neoItem->id));
+//    Logger::printlnCore1("process: ");
+
+    WS2812FX &fx = neoItem->ws2812fx;
+    if (action->action == "ON") {
+        fx.start();
+    } else if (action->action == "OFF") {
+        fx.stop();
+    } else if (action->action == "CHANGE") {
+        if (fx.getBrightness() != action->brightness) {
+            fx.setBrightness(action->brightness);
+        }
+        fx.setColor(action->color.r, action->color.g, action->color.b, action->color.w);
+        if (fx.getMode() != action->animationId) {
+            fx.setMode(action->animationId);
+        }
+
+        fx.setSpeed(action->speed);
+        if (!fx.isRunning()) {
+            fx.start();
+        }
+    }
+}
+
+void Core1Devices::test(Action *action) {
+    for (auto *neoItem: neo) {
+        neoItem->ws2812fx.setBrightness(255);
+        neoItem->ws2812fx.setColor(0, 0, 0, 255);
+        neoItem->ws2812fx.setMode(0);
+        neoItem->ws2812fx.setSpeed(0);
+        if (!neoItem->ws2812fx.isRunning()) {
+            neoItem->ws2812fx.start();
         }
     }
 }

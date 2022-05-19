@@ -10,6 +10,8 @@
 
 class Action {
 public:
+    Action(Action *pAction);
+
     String ioId;
     String ioType;
     String action;

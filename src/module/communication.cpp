@@ -6,19 +6,19 @@
 
 #define ETH_RESET_PIN 20
 
-const char* ACTION_TOPIC = STR(MQTT_ACTION_TOPIC);
-const char* DEVICE_NAME_STR = STR(DEVICE_NAME);
-const char* TRIGGER_TOPIC = STR(MQTT_TRIGGER_TOPIC);
+const char *ACTION_TOPIC = STR(MQTT_ACTION_TOPIC);
+const char *DEVICE_NAME_STR = STR(DEVICE_NAME);
+const char *TRIGGER_TOPIC = STR(MQTT_TRIGGER_TOPIC);
 
-EthernetClient  ethClient;
-PubSubClient    client(ethClient);
+EthernetClient ethClient;
+PubSubClient client(ethClient);
 
 mutex_t actionCore1MsgMutex;
 std::vector<Action> actionCore0Msgs;
 std::vector<Action> actionCore1Msgs;
 
 void setupMqtt() {
-    Serial.print("\nStart MQTTClient init ");
+    Logger::printlnCore0("Start MQTTClient init ");
 
     pinMode(ETH_RESET_PIN, OUTPUT);
     digitalWrite(ETH_RESET_PIN, HIGH);
@@ -29,15 +29,15 @@ void setupMqtt() {
 
     IPAddress ip;
     ip.fromString(STR(DEVICE_IP));
-    const char* macStr = STR(DEVICE_MAC);
+    const char *macStr = STR(DEVICE_MAC);
 
     byte mac[6];
     parseBytes(macStr, '-', mac, 6, 16);
 
     Ethernet.begin(mac);
 
-    Serial.print(F("Connected! IP address: "));
-    Serial.println(Ethernet.localIP());
+    Logger::printlnCore0(F("Connected! IP address: "));
+    Logger::printCore0(Ethernet.localIP());
 
     client.setServer(STR(MQTT_SERVER), 1883);
     client.setCallback(actionTopicCallback);
@@ -48,21 +48,19 @@ void setupMqtt() {
     mutex_init(&actionCore1MsgMutex);
 }
 
-void reconnectMqtt()
-{
-    while (!client.connected())
-    {
-        Serial.print("Attempting MQTT connection to ");
-        Serial.println(STR(MQTT_SERVER));
+void reconnectMqtt() {
+    while (!client.connected()) {
+        Logger::printlnCore0("Attempting MQTT connection to ");
+        Logger::printCore0(STR(MQTT_SERVER));
 
         if (client.connect(DEVICE_NAME_STR)) {
-            Serial.println("...connected");
+            Logger::printlnCore0("...connected");
             String data = "Hello from MQTTClient_SSL on " + String(BOARD_NAME);
             String topic = ACTION_TOPIC + String("/") + DEVICE_NAME_STR;
             client.publish(topic.c_str(), data.c_str());
             client.subscribe(topic.c_str());
         } else {
-            Serial.println("...failed, rc=" + String(client.state()) + " try again in 2 seconds ");
+            Logger::printlnCore0("...failed, rc=" + String(client.state()) + " try again in 2 seconds ");
             sleep_ms(2000);
         }
     }
@@ -74,49 +72,58 @@ void resetENC() {
     digitalWrite(ETH_RESET_PIN, HIGH);
 }
 
-Action deserializeAction(const JsonObject &action);
-
-void actionTopicCallback(char* topic, byte* payload, unsigned int length) {
+void actionTopicCallback(char *topic, byte *payload, unsigned int length) {
     try {
-        Serial.print("Message arrived [");
-        Serial.print(topic);
-        Serial.print("] ");
-//
-//        for (unsigned int i = 0; i < length; i++)
-//        {
-//            Serial.print((char)payload[i]);
-//        }
-//
-//        Serial.println();
+//        int startMicros = millis();
+        Logger::printlnCore0("Total allocated space (uordblks):      " + String(mallinfo().uordblks));
 
+        Logger::printlnCore0("Message arrived [");
+        Logger::print(topic);
+        Logger::print("] ");
         StaticJsonDocument<2048> doc;
 
 
-        DeserializationError error =  deserializeJson(doc, payload, length);
+        DeserializationError error = deserializeJson(doc, payload, length);
         if (error) {
-            Serial.print(F("deserializeJson() failed: "));
-            Serial.println(error.f_str());
+            Logger::printlnCore0(F("deserializeJson() failed: "));
+            Logger::print(error.f_str());
             return;
         }
 
         const JsonArray &actions = doc.getMember("actions").as<JsonArray>();
-        Serial.println("actions: " + String(actions.size()));
-        for (JsonObject action : actions) {
-            Action actionObj = deserializeAction(action);
+        Logger::printlnCore0("actions: " + String(actions.size()));
 
-            if (actionObj.ioType == "NEO") {
-                addToCore1Mutex(actionObj);
-            } else  {
-                actionCore0Msgs.push_back(actionObj);
+        if (mutex_enter_timeout_ms(&actionCore1MsgMutex, 100000)) {
+            Logger::printlnCore0("Start Adding action to queue");
+            for (JsonObject action : actions) {
+                Action *pAction = deserializeAction(action);
+
+                if (pAction->ioType == "NEO") {
+                    actionCore1Msgs.queueEnqueue(pAction);
+//                    addToCore1Mutex(pAction);
+                } else {
+                    actionCore0Msgs.queueEnqueue(pAction);
+                }
             }
+            mutex_exit(&actionCore1MsgMutex);
         }
+
+//        Logger::printlnCore0("Wait fot Core 1 change processing finish");
+//        if (mutex_enter_timeout_ms(&actionCore1MsgMutex, 1000)) {
+//            Logger::printlnCore0("Finish waiting fot Core 1 change processing finish");
+//            mutex_exit(&actionCore1MsgMutex);
+//        }
+
+
+        Logger::printlnCore0("Total allocated space (uordblks):      " + String(mallinfo().uordblks));
+//        Serial.println("\n" + String(millis() - startMicros));
     } catch (...) {
-        Serial.println("Error on parse action msg");
+        Logger::printlnCore0("Error on parse action msg");
     }
 
 }
 
-Action deserializeAction(const JsonObject &action) {
+Action *deserializeAction(const JsonObject &action) {
     const String &ioId = action.getMember("ioId").as<String>();
     const String &ioType = action.getMember("ioType").as<String>();
     const String &ioAction = action.getMember("action").as<String>();
@@ -136,21 +143,21 @@ Action deserializeAction(const JsonObject &action) {
         ioColor.ww = color.getMember("ww").as<uint8_t>();
     }
 
-    Action actionObj(ioId, ioType, ioAction, ioColor, brightness, animationId, speed, time, stepTime);
-    return actionObj;
+    auto *pAction = new Action(ioId, ioType, ioAction, ioColor, brightness, animationId, speed, time, stepTime);
+    return pAction;
 }
 
 void addToCore1Mutex(const Action& action) {
     if (mutex_enter_timeout_ms(&actionCore1MsgMutex, 100000)) {
-        actionCore1Msgs.push_back(action);
+        actionCore1Msgs.queueEnqueue(action);
         mutex_exit(&actionCore1MsgMutex);
     }
 }
 
 unsigned long mqttPubTime = 0;
+
 void mqttService() {
-    if (!client.connected())
-    {
+    if (!client.connected()) {
         reconnectMqtt();
     }
 
@@ -164,7 +171,7 @@ void mqttService() {
 //    }
 }
 
-void parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) {
+void parseBytes(const char *str, char sep, byte *bytes, int maxBytes, int base) {
     for (int i = 0; i < maxBytes; i++) {
         bytes[i] = strtoul(str, NULL, base);
         str = strchr(str, sep);
@@ -175,12 +182,12 @@ void parseBytes(const char* str, char sep, byte* bytes, int maxBytes, int base) 
     }
 }
 
-void publishSensor(const String& id, bool state) {
+void publishSensor(const String &id, bool state) {
     if (client.connected()) {
         StaticJsonDocument<64> doc;
 
         doc["id"] = id;
-        Serial.println("state " + String(state));
+        Logger::printlnCore0("state " + String(state));
         doc["state"] = state;
 
         char buffer[64];

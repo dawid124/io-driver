@@ -11,11 +11,6 @@ RgbwChange::RgbwChange(const Color &color, int steps, RgbwLight *light) : color(
     wStep = ((float) (color.w - light->W)) / (float) steps;
     wwStep = ((float) (color.ww - light->Ww)) / (float) steps;
 
-//    Serial.println("rStep: " + String(rStep));
-//    Serial.println("gStep: " + String(gStep));
-//    Serial.println("bStep: " + String(bStep));
-//    Serial.println("wStep: " + String(wStep));
-
     rVal = (float) light->R;
     gVal = (float) light->G;
     bVal = (float) light->B;
@@ -35,12 +30,6 @@ bool RgbwChange::nextStep() {
     bVal = bVal + bStep;
     wVal = wVal + wStep;
     wwVal = wwVal + wwStep;
-
-
-//    Serial.println("rVal: " + String(rVal));
-//    Serial.println("gVal: " + String(gVal));
-//    Serial.println("bVal: " + String(bVal));
-//    Serial.println("wVal: " + String(wVal));
 
 
     light->color(rVal, gVal, bVal, wVal, wwVal);

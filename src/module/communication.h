@@ -29,5 +29,4 @@ void publishSensor(const String& id, bool state);
 
 void parseBytes(const char *str, char sep, byte *bytes, int maxBytes, int base);
 
-
 #endif //IO_DRIVER_COMMUNICATION_H

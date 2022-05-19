@@ -5,7 +5,6 @@
 #ifndef IO_DRIVER_RGBWLIGHT_H
 #define IO_DRIVER_RGBWLIGHT_H
 
-
 #include "RgbLight.h"
 
 class RgbwLight: public RgbLight {

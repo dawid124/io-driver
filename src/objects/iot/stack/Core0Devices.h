@@ -14,6 +14,8 @@
 #include <arduino-timer.h>
 #include "objects/iot/rgb/RgbLight.h"
 #include "objects/iot/rgb/RgbwLight.h"
+#include "defines.h"
+#include "./module/logger.h"
 
 #define CHANGE_MILLIS 30
 
@@ -22,7 +24,7 @@ public:
     std::vector<RgbLight*> rgb;
     std::vector<RgbwLight*> rgbw;
     std::vector<MotionSensor*> motionSensors;
-    Timer<20, millis, RgbwChange*> timer;
+    Timer<256, millis, RgbwChange*> timer;
 
     SX1509 ioExpanderA;
     SX1509 ioExpanderB;
