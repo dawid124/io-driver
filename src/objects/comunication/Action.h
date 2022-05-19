@@ -24,7 +24,7 @@ public:
     int time;
     int stepTime;
 
-    Action(const String &ioId, const String &ioType, String action, const Color &color, uint8_t brightness,
+    Action(String ioId, String ioType, String action, Color color, uint8_t brightness,
            int animationId, int speed, int time, int stepTime);
 };
 

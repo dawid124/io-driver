@@ -13,18 +13,11 @@ NeoChange::NeoChange(const Color &color,int brightness, int steps, NeoLight *neo
     uint8_t r = (uint8_t) ((currentColor >> 16) & 0xFF);
     uint8_t w = (uint8_t) ((currentColor >> 24) & 0xFF);
 
-    Serial.println("current W: " + String(w));
-
     rStep = ((float) (color.r - r)) / (float) steps;
     gStep = ((float) (color.g - g)) / (float) steps;
     bStep = ((float) (color.b - b)) / (float) steps;
     wStep = ((float) (color.w - w)) / (float) steps;
     brightnessStep = ((float) (brightness - currentBrightness)) / (float) steps;
-
-//    Serial.println("rStep: " + String(rStep));
-//    Serial.println("gStep: " + String(gStep));
-//    Serial.println("bStep: " + String(bStep));
-    Serial.println("wStep: " + String(wStep));
 
 
     rVal = (float) r;
@@ -46,13 +39,6 @@ bool NeoChange::nextStep() {
     bVal = bVal + bStep;
     wVal = wVal + wStep;
     brightnessVal = brightnessVal + brightnessStep;
-
-//    Serial.println(String(steps) + " - wVal: " + Stri255g(wVal));
-
-//    Serial.println("rVal: " + String(rVal));
-//    Serial.println("gVal: " + String(gVal));
-//    Serial.println("bVal: " + String(bVal));
-    Serial.println("wVal: " + String(wVal));
 
     neo->ws2812fx.setColor(rVal, gVal, bVal, wVal);
     neo->ws2812fx.setBrightness(brightnessVal);

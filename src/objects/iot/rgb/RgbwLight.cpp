@@ -32,19 +32,11 @@ void RgbwLight::on(uint8_t r, uint8_t g, uint8_t b, uint8_t w, uint8_t ww) {
 void RgbwLight::color(uint8_t r, uint8_t g, uint8_t b, uint8_t w, uint8_t ww) {
     RgbLight::color(r, g, b);
 
-    Serial.println("R: " + String(r));
-    Serial.println("G: " + String(g));
-    Serial.println("B: " + String(b));
-    Serial.println("W: " + String(w));
-    Serial.println("Ww: " + String(ww));
-
     W = w;
     Ww = 0;
     io.analogWrite(pinW, w);
     if (rgbww) {
         Ww = ww;
-        Serial.println("ww: " + String(ww));
-        Serial.println("pinWw: " + String(pinWw));
         io.analogWrite(pinWw, ww);
     }
 }

@@ -28,7 +28,8 @@ public:
 
     void service();
 
-    void process(const Action &action);
+    void process(Action *action);
+    void test(Action *action);
 
     void picoLight();
 

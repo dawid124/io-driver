@@ -20,14 +20,8 @@ Color::Color() {
 void Color::setBrightness(uint8_t v) {
     float percent = (float) v / (float) 255;
     r = (int) ((float) r * percent);
-    Serial.println("newR: " + String(r));
     g = (int) ((float) g * percent);
-    Serial.println("newG: " + String(g));
     b = (int) ((float) b * percent);
-    Serial.println("newB: " + String(b));
     w = (int) ((float) w * percent);
-    Serial.println("newW: " + String(w));
     ww = (int) ((float) ww * percent);
-    Serial.println("newWw: " + String(ww));
 }
-

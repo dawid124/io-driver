@@ -39,14 +39,14 @@ public:
 
     void printDevices();
 
-    void process(const Action &action);
+    void process(Action *action);
     void service();
 
     RgbLight* getRgbById(String id);
     RgbwLight* getRgbwById(String id);
 
 private:
-    void processRgbwAction(const Action &action, RgbwLight& light);
+    void processRgbwAction(Action *action, RgbwLight& light);
     static bool rgbwChange(RgbwChange *change);
 };
 

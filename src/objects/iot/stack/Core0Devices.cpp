@@ -72,33 +72,34 @@ RgbwLight *Core0Devices::getRgbwById(String id) {
 }
 
 
-void Core0Devices::process(const Action &action) {
-    if (action.ioType == "RGBW") {
-        RgbwLight *light = getRgbwById(action.ioId);
+void Core0Devices::process(Action *action) {
+    if (action->ioType == "RGBW") {
+        RgbwLight *light = getRgbwById(action->ioId);
+        Logger::printlnCore0("process: " + String(light->id));
         processRgbwAction(action, *light);
-    } else if (action.ioType == "RGB") {
+    } else if (action->ioType == "RGB") {
 
-    } else if (action.ioType == "BLIND") {
+    } else if (action->ioType == "BLIND") {
 
-    } else if (action.ioType == "HEATING") {
+    } else if (action->ioType == "HEATING") {
 
     }
 }
 
-void Core0Devices::processRgbwAction(const Action &action, RgbwLight &light) {
+void Core0Devices::processRgbwAction(Action *action, RgbwLight &light) {
 
     if (light.task != (uintptr_t)(NULL)) {
         timer.cancel(light.task);
     }
 
-    Color color = action.color;
+    Color color = action->color;
 
-    color.setBrightness(action.brightness);
+    color.setBrightness(action->brightness);
     int stepTime = CHANGE_MILLIS;
-    if (action.stepTime > 0) {
-        stepTime = action.stepTime;
+    if (action->stepTime > 0) {
+        stepTime = action->stepTime;
     }
-    int steps = (int) action.time / stepTime;
+    int steps = (int) action->time / stepTime;
 
     auto *rgbwChangePtr = new RgbwChange(color, steps, &light);
     light.task = timer.every(stepTime, rgbwChange, rgbwChangePtr);

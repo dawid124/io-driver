@@ -6,9 +6,9 @@
 
 void Core1Devices::setupDevices() {
 //    111
-//    neo.push_back(new NeoLight("neo-kitchen", 12, 98, NEO_RGBW + NEO_KHZ800, false));
+    neo.push_back(new NeoLight("neo-kitchen", 12, 98, NEO_RGBW + NEO_KHZ800, false));
     neo.push_back(new NeoLight("neo-celling", 13, 225, NEO_RGBW + NEO_KHZ800, false));
-//    neo.push_back(new NeoLight("neo-tv", 11, 133, NEO_RGBW + NEO_KHZ800, true));
+    neo.push_back(new NeoLight("neo-tv", 11, 133, NEO_RGBW + NEO_KHZ800, true));
 
 //    2222
 //    neo.push_back(new NeoLight("neo-wall-1", 15, 121, NEO_GRB + NEO_KHZ800));
@@ -92,7 +92,7 @@ Core1Devices::Core1Devices() {
 
 void Core1Devices::service() {
     picoLight();
-    for (auto const &neo: neo) {
-        neo->service();
+    for (auto *neoItem: neo) {
+        neoItem->service();
     }
 }

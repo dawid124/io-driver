@@ -14,8 +14,10 @@ EthernetClient ethClient;
 PubSubClient client(ethClient);
 
 mutex_t actionCore1MsgMutex;
-std::vector<Action> actionCore0Msgs;
-std::vector<Action> actionCore1Msgs;
+Queue actionCore0Msgs(256);
+Queue actionCore1Msgs(256);
+
+Action *deserializeAction(const JsonObject &action);
 
 void setupMqtt() {
     Logger::printlnCore0("Start MQTTClient init ");
@@ -147,7 +149,7 @@ Action *deserializeAction(const JsonObject &action) {
     return pAction;
 }
 
-void addToCore1Mutex(const Action& action) {
+void addToCore1Mutex(Action *action) {
     if (mutex_enter_timeout_ms(&actionCore1MsgMutex, 100000)) {
         actionCore1Msgs.queueEnqueue(action);
         mutex_exit(&actionCore1MsgMutex);
