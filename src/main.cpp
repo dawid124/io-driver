@@ -75,21 +75,30 @@ void setup()
 
     Logger::printlnCore0("configuration finished");
 }
-
+//int lastTime = millis();
 void loop()
 {
+
 //    int startMicros = millis();
     mqttService();
+//    Serial.println("\n" + String(millis() - startMicros));
     core0Devices.service();
 
     if (actionCore0Msgs.rear > 0) {
-        Action *pAction = actionCore0Msgs.queueDequeue();
-        core0Devices.process(pAction);
-        delete pAction;
+        while (actionCore0Msgs.rear > 0) {
+            Action *pAction = actionCore0Msgs.queueDequeue();
+            core0Devices.process(pAction);
+            delete pAction;
+        }
     }
 
     processSensors();
-//    Serial.println("\n" + String(millis() - startMicros));
+
+
+//if ((millis() - lastTime) > 10) {
+//    Serial.println("\nTime: " + String(millis() - lastTime));
+//}
+//    lastTime = millis();
 }
 
 void processSensors() {

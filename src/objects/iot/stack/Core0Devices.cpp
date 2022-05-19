@@ -101,6 +101,11 @@ void Core0Devices::processRgbwAction(Action *action, RgbwLight &light) {
     }
     int steps = (int) action->time / stepTime;
 
+    if (steps <= 1) {
+        RgbwChange(color, steps, &light).nextStep();
+        return;
+    }
+
     auto *rgbwChangePtr = new RgbwChange(color, steps, &light);
     light.task = timer.every(stepTime, rgbwChange, rgbwChangePtr);
 }

@@ -7,6 +7,7 @@
 #define ETH_RESET_PIN 20
 
 const char *ACTION_TOPIC = STR(MQTT_ACTION_TOPIC);
+const char *SYNC_TOPIC = STR(MQTT_SYNC_TOPIC);
 const char *DEVICE_NAME_STR = STR(DEVICE_NAME);
 const char *TRIGGER_TOPIC = STR(MQTT_TRIGGER_TOPIC);
 
@@ -21,6 +22,7 @@ Action *deserializeAction(const JsonObject &action);
 
 void setupMqtt() {
     Logger::printlnCore0("Start MQTTClient init ");
+    Logger::printCore0(DEVICE_NAME_STR);
 
     pinMode(ETH_RESET_PIN, OUTPUT);
     digitalWrite(ETH_RESET_PIN, HIGH);
@@ -54,6 +56,7 @@ void reconnectMqtt() {
     while (!client.connected()) {
         Logger::printlnCore0("Attempting MQTT connection to ");
         Logger::printCore0(STR(MQTT_SERVER));
+
 
         if (client.connect(DEVICE_NAME_STR)) {
             Logger::printlnCore0("...connected");
