@@ -27,9 +27,11 @@ void init() {
     sleep_ms(1000);
     setupMqtt();
     sleep_ms(1000);
+    core0Devices.init();
     initDevices();
 
     Logger::printlnCore0("Waiting for config...");
+    // todo add resent of msg
     while (driverState != WORKING) {
         mqttService();
     }

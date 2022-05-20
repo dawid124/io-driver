@@ -11,6 +11,7 @@
 #include <objects/iot/stack/Core0Devices.h>
 #include <objects/iot/stack/Core1Devices.h>
 #include "msgQueue.h"
+#include <stdio.h>
 
 enum DriverState { READY_FOR_CONFIG, READY_FOR_INITIAL_STATE, WORKING };
 

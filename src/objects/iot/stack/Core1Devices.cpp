@@ -24,16 +24,11 @@ NeoLight *Core1Devices::getNeoById(String id) {
 
 void Core1Devices::process(Action *action) {
     NeoLight *neoItem = getNeoById(action->ioId);
-//
-//    Logger::printlnCore1("process: " + String(neoItem->id));
-//    Logger::printlnCore1("process: ");
 
     WS2812FX &fx = neoItem->ws2812fx;
-    if (action->action == "ON") {
-        fx.start();
-    } else if (action->action == "OFF") {
+    if (action->brightness == 0) {
         fx.stop();
-    } else if (action->action == "CHANGE") {
+    } else {
         if (fx.getBrightness() != action->brightness) {
             fx.setBrightness(action->brightness);
         }

@@ -9,14 +9,12 @@ Action::Action(String ioId, String ioType, String action, Color color, uint8_t b
                                                        brightness(brightness), animationId(animationId), speed(speed),
                                                        time(time), stepTime(stepTime) {}
 
-Action::Action(Action *pAction) {
-    ioId = pAction->ioId;
-    ioType = pAction->ioType;
-    action = pAction->action;
-//    color = pAction->color;
-    brightness = pAction->brightness;
-    animationId = pAction->animationId;
-    speed = pAction->speed;
-    time = pAction->time;
-    stepTime = pAction->stepTime;
+Action::Action(String ioId, String action, Color color, uint8_t brightness,
+               int animationId, int speed, int time, int stepTime) : ioId(std::move(ioId)), action(std::move(action)), color(color),
+                                                                     brightness(brightness), animationId(animationId), speed(speed),
+                                                                     time(time), stepTime(stepTime) {}
+
+Action::Action(String ioId) : ioId(std::move(ioId)) {
+    stepTime = 0;
 }
+

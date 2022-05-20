@@ -10,6 +10,7 @@
 #include <objects/comunication/Action.h>
 #include "objects/iot/neo/NeoLight.h"
 #include "module/logger.h"
+#include <map>
 
 #define STATUS_LED_INTERVAL   2000
 
@@ -18,6 +19,8 @@ private:
     unsigned long change_color_timeout;
     bool state;
 public:
+    std::map<String,String> idTypeMap;
+
     Core1Devices();
 
     std::vector<NeoLight*> neo;

@@ -85,9 +85,7 @@ void resetENC() {
 void actionTopicCallback(char *topic, byte *payload, unsigned int length) {
     try {
         Logger::printlnCore0("Total allocated space (uordblks):      " + String(mallinfo().uordblks));
-        Logger::printlnCore0("Message arrived [");
-        Logger::print(topic);
-        Logger::print("] ");
+        Logger::printlnCore0("Message arrived [" + String(topic) + "] length: [" + String(length) + "]");
         StaticJsonDocument<4048> doc;
 
 
@@ -102,7 +100,7 @@ void actionTopicCallback(char *topic, byte *payload, unsigned int length) {
         if (doc.containsKey("actions")) {
             const JsonArray &actions = doc.getMember("actions").as<JsonArray>();
             processActions(actions);
-        } else if (doc.containsKey("configs")) {
+        } else if (doc.containsKey("configs") && driverState == READY_FOR_CONFIG) {
             const JsonArray &config = doc.getMember("configs").as<JsonArray>();
             processConfig(config);
         }
@@ -123,7 +121,8 @@ void processActions(const JsonArray &actions) {
         for (JsonObject action : actions) {
             Action *pAction = deserializeAction(action);
 
-            if (pAction->ioType == "NEO") {
+//            Serial.println("IoId: " + String(pAction->ioId) + "ActionType: " + String(core1Devices.idTypeMap[pAction->ioId] == "NEO"));
+            if (core1Devices.idTypeMap[pAction->ioId] == "NEO") {
                 actionCore1Msgs.queueEnqueue(pAction);
             } else {
                 actionCore0Msgs.queueEnqueue(pAction);
@@ -134,26 +133,33 @@ void processActions(const JsonArray &actions) {
 }
 
 Action *deserializeAction(const JsonObject &action) {
-    const String &ioId = action.getMember("ioId").as<String>();
-    const String &ioType = action.getMember("ioType").as<String>();
-    const String &ioAction = action.getMember("action").as<String>();
-    const uint8_t &brightness = action.getMember("brightness").as<uint8_t>();
-    const int &animationId = action.getMember("animationId").as<int>();
-    const int &speed = action.getMember("speed").as<int>();
-    const int &time = action.getMember("time").as<int>();
-    const int &stepTime = action.getMember("stepTime").as<int>();
+    const String &ioId = action.getMember("id").as<String>();
+    auto *pAction = new Action(ioId);
 
-    Color ioColor;
-    const JsonObject &color = action.getMember("color").as<JsonObject>();
-    if (!color.isNull()) {
-        ioColor.r = color.getMember("r").as<uint8_t>();
-        ioColor.g = color.getMember("g").as<uint8_t>();
-        ioColor.b = color.getMember("b").as<uint8_t>();
-        ioColor.w = color.getMember("w").as<uint8_t>();
-        ioColor.ww = color.getMember("ww").as<uint8_t>();
+    if (action.containsKey("a")) pAction->action = action.getMember("a").as<String>();
+    if (action.containsKey("b")) pAction->brightness = action.getMember("b").as<uint8_t>();
+
+    if (action.containsKey("an")) pAction->animationId = action.getMember("an").as<int>();
+    if (action.containsKey("s")) pAction->speed = action.getMember("s").as<int>();
+
+    if (action.containsKey("t")) pAction->time = action.getMember("t").as<int>();
+    if (action.containsKey("st")) pAction->stepTime = action.getMember("st").as<int>();
+
+    if (action.containsKey("c")) {
+        Color ioColor(0, 0, 0, 255);
+        const String &color = action.getMember("c").as<String>();
+        int r, g, b, w, ww;
+        sscanf(color.c_str(), "%02x%02x%02x%02x%02x", &r, &g, &b, &w, &ww);
+
+        ioColor.r = (uint8_t) r;
+        ioColor.g = (uint8_t) g;
+        ioColor.b = (uint8_t) b;
+        ioColor.w = (uint8_t) w;
+        ioColor.ww = (uint8_t) ww;
+
+        pAction->color = ioColor;
     }
 
-    auto *pAction = new Action(ioId, ioType, ioAction, ioColor, brightness, animationId, speed, time, stepTime);
     return pAction;
 }
 
@@ -173,6 +179,7 @@ void processConfig(const JsonArray &actions) {
             if (neoType == "NEO_GRBW") neoConfig = NEO_RGBW + NEO_KHZ800;
 
             core1Devices.neo.push_back(new NeoLight(id, pin, ledCount, neoConfig, reverse));
+            core1Devices.idTypeMap[id] = "NEO";
         } else if (ioType == "RGBW") {
             const String &location = action.getMember("location").as<String>();
             SX1509* io;
@@ -187,6 +194,7 @@ void processConfig(const JsonArray &actions) {
             const int &pinW = action.getMember("pinW").as<int>();
 
             core0Devices.rgbw.push_back(new RgbwLight(id, io, pinR, pinG, pinB, pinW));
+            core0Devices.idTypeMap[id] = "RGBW";
         } else if (ioType == "MOTION_SENSOR") {
             const int &pin = action.getMember("pin").as<int>();
             core0Devices.motionSensors.push_back(new MotionSensor(id, pin));
@@ -255,8 +263,6 @@ void publishSensor(const String &id, bool state) {
 }
 
 void initDevices() {
-    core0Devices.init();
     String data = R"({"id":")" + String(DEVICE_NAME_STR) + R"(","type":"READY_FOR_CONFIG"})";
-    Serial.println(data);
     client.publish(String(SYNC_TOPIC).c_str(), data.c_str());
 }

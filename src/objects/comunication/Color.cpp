@@ -13,9 +13,7 @@ Color::Color(uint8_t r, uint8_t g, uint8_t b, uint8_t w) : r(r), g(g), b(b), w(w
 
 Color::Color(uint8_t r, uint8_t g, uint8_t b, uint8_t w, uint8_t ww) : r(r), g(g), b(b), w(w), ww(ww) {}
 
-Color::Color() {
-
-}
+Color::Color() {}
 
 void Color::setBrightness(uint8_t v) {
     float percent = (float) v / (float) 255;

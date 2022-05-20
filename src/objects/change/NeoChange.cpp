@@ -28,7 +28,6 @@ NeoChange::NeoChange(const Color &color,int brightness, int steps, NeoLight *neo
 }
 
 bool NeoChange::nextStep() {
-    Serial.println("steps: " + String(steps));
     if (steps == 0) {
         neo->ws2812fx.setColor(color.r, color.g, color.b, color.w);
         return false;

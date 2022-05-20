@@ -16,6 +16,7 @@
 #include "objects/iot/rgb/RgbwLight.h"
 #include "defines.h"
 #include "./module/logger.h"
+#include <map>
 
 #define CHANGE_MILLIS 30
 
@@ -25,6 +26,8 @@ public:
     std::vector<RgbwLight*> rgbw;
     std::vector<MotionSensor*> motionSensors;
     Timer<256, millis, RgbwChange*> timer;
+
+    std::map<String,String> idTypeMap;
 
     SX1509 ioExpanderA;
     SX1509 ioExpanderB;
