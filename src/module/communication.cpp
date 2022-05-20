@@ -18,7 +18,14 @@ mutex_t actionCore1MsgMutex;
 Queue actionCore0Msgs(256);
 Queue actionCore1Msgs(256);
 
+Core0Devices core0Devices;
+Core1Devices core1Devices;
+
+DriverState driverState;
+
 Action *deserializeAction(const JsonObject &action);
+
+void processActions(const JsonArray &actions);
 
 void setupMqtt() {
     Logger::printlnCore0("Start MQTTClient init ");
@@ -49,6 +56,7 @@ void setupMqtt() {
 
     reconnectMqtt();
 
+    driverState = READY_FOR_CONFIG;
     mutex_init(&actionCore1MsgMutex);
 }
 
@@ -57,13 +65,10 @@ void reconnectMqtt() {
         Logger::printlnCore0("Attempting MQTT connection to ");
         Logger::printCore0(STR(MQTT_SERVER));
 
-
         if (client.connect(DEVICE_NAME_STR)) {
             Logger::printlnCore0("...connected");
-            String data = "Hello from MQTTClient_SSL on " + String(BOARD_NAME);
-            String topic = ACTION_TOPIC + String("/") + DEVICE_NAME_STR;
-            client.publish(topic.c_str(), data.c_str());
-            client.subscribe(topic.c_str());
+            String actionTopic = ACTION_TOPIC + String("/") + DEVICE_NAME_STR;
+            client.subscribe(actionTopic.c_str());
         } else {
             Logger::printlnCore0("...failed, rc=" + String(client.state()) + " try again in 2 seconds ");
             sleep_ms(2000);
@@ -79,13 +84,11 @@ void resetENC() {
 
 void actionTopicCallback(char *topic, byte *payload, unsigned int length) {
     try {
-//        int startMicros = millis();
         Logger::printlnCore0("Total allocated space (uordblks):      " + String(mallinfo().uordblks));
-
         Logger::printlnCore0("Message arrived [");
         Logger::print(topic);
         Logger::print("] ");
-        StaticJsonDocument<2048> doc;
+        StaticJsonDocument<4048> doc;
 
 
         DeserializationError error = deserializeJson(doc, payload, length);
@@ -95,37 +98,39 @@ void actionTopicCallback(char *topic, byte *payload, unsigned int length) {
             return;
         }
 
-        const JsonArray &actions = doc.getMember("actions").as<JsonArray>();
-        Logger::printlnCore0("actions: " + String(actions.size()));
-
-        if (mutex_enter_timeout_ms(&actionCore1MsgMutex, 100000)) {
-            Logger::printlnCore0("Start Adding action to queue");
-            for (JsonObject action : actions) {
-                Action *pAction = deserializeAction(action);
-
-                if (pAction->ioType == "NEO") {
-                    actionCore1Msgs.queueEnqueue(pAction);
-//                    addToCore1Mutex(pAction);
-                } else {
-                    actionCore0Msgs.queueEnqueue(pAction);
-                }
-            }
-            mutex_exit(&actionCore1MsgMutex);
+        Logger::printlnCore0("Deserialize JSON completed");
+        if (doc.containsKey("actions")) {
+            const JsonArray &actions = doc.getMember("actions").as<JsonArray>();
+            processActions(actions);
+        } else if (doc.containsKey("configs")) {
+            const JsonArray &config = doc.getMember("configs").as<JsonArray>();
+            processConfig(config);
         }
-
-//        Logger::printlnCore0("Wait fot Core 1 change processing finish");
-//        if (mutex_enter_timeout_ms(&actionCore1MsgMutex, 1000)) {
-//            Logger::printlnCore0("Finish waiting fot Core 1 change processing finish");
-//            mutex_exit(&actionCore1MsgMutex);
-//        }
 
 
         Logger::printlnCore0("Total allocated space (uordblks):      " + String(mallinfo().uordblks));
-//        Serial.println("\n" + String(millis() - startMicros));
     } catch (...) {
         Logger::printlnCore0("Error on parse action msg");
     }
 
+}
+
+void processActions(const JsonArray &actions) {
+    Logger::printlnCore0("actions: " + String(actions.size()));
+
+    if (mutex_enter_timeout_ms(&actionCore1MsgMutex, 100000)) {
+        Logger::printlnCore0("Start Adding action to queue");
+        for (JsonObject action : actions) {
+            Action *pAction = deserializeAction(action);
+
+            if (pAction->ioType == "NEO") {
+                actionCore1Msgs.queueEnqueue(pAction);
+            } else {
+                actionCore0Msgs.queueEnqueue(pAction);
+            }
+        }
+        mutex_exit(&actionCore1MsgMutex);
+    }
 }
 
 Action *deserializeAction(const JsonObject &action) {
@@ -150,6 +155,51 @@ Action *deserializeAction(const JsonObject &action) {
 
     auto *pAction = new Action(ioId, ioType, ioAction, ioColor, brightness, animationId, speed, time, stepTime);
     return pAction;
+}
+
+void processConfig(const JsonArray &actions) {
+    Logger::printlnCore0("configs: " + String(actions.size()));
+
+    for (JsonObject action : actions) {
+
+        const String &ioType = action.getMember("ioType").as<String>();
+        const String &id = action.getMember("id").as<String>();
+        if (ioType == "NEO") {
+            const String &neoType = action.getMember("neoType").as<String>();
+            const bool &reverse = action.getMember("neoType").as<bool>();
+            const int &ledCount = action.getMember("ledCount").as<int>();
+            const int &pin = action.getMember("pin").as<int>();
+            int neoConfig = NEO_GRB + NEO_KHZ800;
+            if (neoType == "NEO_GRBW") neoConfig = NEO_RGBW + NEO_KHZ800;
+
+            core1Devices.neo.push_back(new NeoLight(id, pin, ledCount, neoConfig, reverse));
+        } else if (ioType == "RGBW") {
+            const String &location = action.getMember("location").as<String>();
+            SX1509* io;
+            if (location == "EXPANDER_A") io = &core0Devices.ioExpanderA;
+            else if (location == "EXPANDER_B") io = &core0Devices.ioExpanderB;
+            else if (location == "EXPANDER_C") io = &core0Devices.ioExpanderC;
+            else if (location == "EXPANDER_D") io = &core0Devices.ioExpanderD;
+
+            const int &pinR = action.getMember("pinR").as<int>();
+            const int &pinG = action.getMember("pinG").as<int>();
+            const int &pinB = action.getMember("pinB").as<int>();
+            const int &pinW = action.getMember("pinW").as<int>();
+
+            core0Devices.rgbw.push_back(new RgbwLight(id, io, pinR, pinG, pinB, pinW));
+        } else if (ioType == "MOTION_SENSOR") {
+            const int &pin = action.getMember("pin").as<int>();
+            core0Devices.motionSensors.push_back(new MotionSensor(id, pin));
+        }
+    }
+    driverState = WORKING;
+
+    core0Devices.printDevices();
+    core1Devices.printDevices();
+
+    String data = R"({"id":")" + String(DEVICE_NAME_STR) + R"(","type":"READY_FOR_INITIAL_STATE"})";
+    client.publish(String(SYNC_TOPIC).c_str(), data.c_str());
+
 }
 
 void addToCore1Mutex(Action *action) {
@@ -202,4 +252,11 @@ void publishSensor(const String &id, bool state) {
     } else {
         reconnectMqtt();
     }
+}
+
+void initDevices() {
+    core0Devices.init();
+    String data = R"({"id":")" + String(DEVICE_NAME_STR) + R"(","type":"READY_FOR_CONFIG"})";
+    Serial.println(data);
+    client.publish(String(SYNC_TOPIC).c_str(), data.c_str());
 }

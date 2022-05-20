@@ -1,19 +1,5 @@
 #include <module/communication.h>
 #include <Arduino.h>
-#include <objects/iot/stack/Core0Devices.h>
-
-#include <objects/change/RgbwChange.h>
-#include <objects/change/NeoChange.h>
-#include <objects/iot/stack/Core1Devices.h>
-
-Core0Devices core0Devices;
-Core1Devices core1Devices;
-
-#include <malloc.h>
-
-static void display_mallinfo(void) {
-    Logger::printlnCore0("Total allocated space (uordblks):      " + String(mallinfo().uordblks));
-}
 
 void processSensors();
 
@@ -40,12 +26,13 @@ void init() {
 
     sleep_ms(1000);
     setupMqtt();
-
     sleep_ms(1000);
-    core0Devices.init();
+    initDevices();
 
-    core0Devices.setupDevices();
-    core1Devices.setupDevices();
+    Logger::printlnCore0("Waiting for config...");
+    while (driverState != WORKING) {
+        mqttService();
+    }
 
     pinMode(LED_BUILTIN, OUTPUT);
 }

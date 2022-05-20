@@ -22,8 +22,6 @@ public:
 
     std::vector<NeoLight*> neo;
 
-    void setupDevices();
-
     void printDevices();
 
     void service();

@@ -33,8 +33,6 @@ public:
 
     void init();
 
-    void setupDevices();
-
     void initializeExpander(SX1509 &expander, byte address);
 
     void printDevices();

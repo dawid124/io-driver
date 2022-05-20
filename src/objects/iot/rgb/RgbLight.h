@@ -16,13 +16,13 @@ private:
     uint8_t pinG;
     uint8_t pinB;
 protected:
-    SX1509 io;
+    SX1509* io;
 public:
     int R;
     int G;
     int B;
 
-    RgbLight(const String& id, SX1509 &io, uint8_t pinR, uint8_t pinG, uint8_t pinB);
+    RgbLight(const String& id, SX1509 *io, uint8_t pinR, uint8_t pinG, uint8_t pinB);
 
     void on(uint8_t r, uint8_t g, uint8_t b);
     void color(uint8_t r, uint8_t g, uint8_t b);

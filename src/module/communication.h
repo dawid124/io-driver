@@ -8,14 +8,23 @@
 #include "./defines.h"
 #include "./module/logger.h"
 #include <malloc.h>
+#include <objects/iot/stack/Core0Devices.h>
+#include <objects/iot/stack/Core1Devices.h>
 #include "msgQueue.h"
 
-extern const char *ACTION_TOPIC;
+enum DriverState { READY_FOR_CONFIG, READY_FOR_INITIAL_STATE, WORKING };
+
 extern mutex_t actionCore1MsgMutex;
 extern Queue actionCore0Msgs;
 extern Queue actionCore1Msgs;
 
+extern Core0Devices core0Devices;
+extern Core1Devices core1Devices;
+
+extern DriverState driverState;
+
 void setupMqtt();
+void initDevices();
 
 void reconnectMqtt();
 
@@ -30,5 +39,9 @@ void resetENC();
 void publishSensor(const String& id, bool state);
 
 void parseBytes(const char *str, char sep, byte *bytes, int maxBytes, int base);
+
+void processActions(const JsonArray &actions);
+
+void processConfig(const JsonArray &actions);
 
 #endif //IO_DRIVER_COMMUNICATION_H
