@@ -4,17 +4,30 @@
 
 #include "MotionSensor.h"
 
-MotionSensor::MotionSensor(const String &id, uint8_t pin) : IThings(id), pin(pin) {
+MotionSensor::MotionSensor(const String &id, uint8_t pin, bool reverse) : IThings(id), pin(pin), reverse(reverse) {
     this->currentState = false;
     this->prevState = false;
-    pinMode(pin, INPUT);
-    digitalWrite(pin, LOW);
+    if (reverse) {
+        pinMode(pin, INPUT_PULLUP);
+    } else {
+        pinMode(pin, INPUT);
+        digitalWrite(pin, LOW);
+    }
 }
 
 MotionSensorStatus MotionSensor::check() {
-    PinStatus read = digitalRead(this->pin);
-    sleep_ms(1);
-    PinStatus read2 = digitalRead(this->pin);
+    bool read;
+    bool read2;
+    if (reverse) {
+        read = !digitalRead(this->pin);
+        sleep_ms(1);
+        read2 = !digitalRead(this->pin);
+    } else {
+        read = digitalRead(this->pin);
+        sleep_ms(1);
+        read2 = digitalRead(this->pin);
+    }
+
 
     if (read != read2) {
         return NOT_CHANGED;

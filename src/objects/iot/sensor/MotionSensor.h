@@ -18,9 +18,10 @@ class MotionSensor: public IThings {
 private:
     uint8_t pin;
     bool prevState;
+    bool reverse;
 public:
     bool currentState;
-    MotionSensor(const String &id, uint8_t pin);
+    MotionSensor(const String &id, uint8_t pin, bool reverse);
 
     MotionSensorStatus check();
 };

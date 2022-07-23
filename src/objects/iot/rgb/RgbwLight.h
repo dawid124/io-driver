@@ -11,7 +11,6 @@ class RgbwLight: public RgbLight {
 private:
     uint8_t pinW;
     uint8_t pinWw;
-    bool rgbww;
 public:
     int W;
     int Ww;

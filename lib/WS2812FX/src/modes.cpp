@@ -43,9 +43,29 @@
  * No blinking. Just plain old static light.
  */
 uint16_t WS2812FX::mode_static(void) {
-  fill(_seg->colors[0], _seg->start, _seg_len);
-  SET_CYCLE;
-  return _seg->speed;
+    if (_seg->static_sub_mode == 1) {
+        int lum = 255 - _seg_rt->counter_mode_step;
+        if (lum < 0) {
+            lum = 0;
+        }
+
+        uint32_t color = color_blend(_seg->colors[1], _seg->colors[0], lum);
+        fill(color, _seg->start, _seg_len);
+
+        _seg_rt->counter_mode_step += _seg->static_sub_mode_step_value;
+        if (_seg_rt->counter_mode_step > 255) {
+            _seg_rt->counter_mode_step = 0;
+            _seg->static_sub_mode = 0;
+            _seg->colors[0] = _seg->colors[1];
+        }
+        return _seg->speed;
+    } else {
+        // Default Static
+
+        fill(_seg->colors[0], _seg->start, _seg_len);
+        SET_CYCLE;
+        return _seg->speed;
+    }
 }
 
 /*

@@ -19,6 +19,8 @@ void processSensors();
 //    ws2812fx_p2.show();
 //}
 
+unsigned long reconnectTimeout;
+#define RESENT_TIMEOUT   3000
 
 void init() {
     Logger::printlnCore0("\nStart Initializing ");
@@ -28,13 +30,16 @@ void init() {
     setupMqtt();
     sleep_ms(1000);
     core0Devices.init();
-    initDevices();
 
-    Logger::printlnCore0("Waiting for config...");
-    // todo add resent of msg
+
     while (driverState != WORKING) {
-        mqttService();
+        if ((millis() > reconnectTimeout) || (reconnectTimeout == 0)) {
+            Logger::printlnCore0("Waiting for config...");
+            initDevices();
+            reconnectTimeout = millis() + RESENT_TIMEOUT;
+        }
     }
+    mqttService();
 
     pinMode(LED_BUILTIN, OUTPUT);
 }
@@ -43,7 +48,9 @@ void setup()
     rp2040.idleOtherCore();
 
     Serial.begin(115200);
-//    while (!Serial);
+#ifdef APP_DEBUG
+    while (!Serial);
+#endif
     init();
 
 
@@ -103,9 +110,10 @@ void loop1() {
 //    ws2812fx_v1.service();
     core1Devices.service();
 
-    if (mutex_enter_timeout_ms(&actionCore1MsgMutex, 0)) {
+//    if (mutex_enter_timeout_ms(&actionCore1MsgMutex, 0)) {
+    mutex_enter_blocking	(&actionCore1MsgMutex);
 
-        while (actionCore1Msgs.rear > 0) {
+    while (actionCore1Msgs.rear > 0) {
 //            Logger::printlnCore1("Start Processing: ");
             Action* pAction = actionCore1Msgs.queueDequeue();
             core1Devices.process(pAction);
@@ -126,7 +134,7 @@ void loop1() {
 //            actionCore1Msgs.erase(actionCore1Msgs.begin());
 //        }
         mutex_exit(&actionCore1MsgMutex);
-    }
+//    }
 
 
 }

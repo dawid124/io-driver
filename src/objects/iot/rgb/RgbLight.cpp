@@ -10,13 +10,33 @@ RgbLight::RgbLight(const String& id, SX1509 *io, uint8_t pinR, uint8_t pinG, uin
     G = 0;
     B = 0;
 
-    io->analogWrite(pinR, 0);
-    io->analogWrite(pinG, 0);
-    io->analogWrite(pinB, 0);
-
-    io->pinMode(pinR, ANALOG_OUTPUT);
-    io->pinMode(pinG, ANALOG_OUTPUT);
-    io->pinMode(pinB, ANALOG_OUTPUT);
+    if (io != nullptr) {
+        if (pinR > 0) {
+            io->analogWrite(pinR, 0);
+            io->pinMode(pinR, ANALOG_OUTPUT);
+        }
+        if (pinG > 0) {
+            io->analogWrite(pinG, 0);
+            io->pinMode(pinG, ANALOG_OUTPUT);
+        }
+        if (pinB > 0) {
+            io->analogWrite(pinB, 0);
+            io->pinMode(pinB, ANALOG_OUTPUT);
+        }
+    } else {
+        if (pinR > 0) {
+            analogWrite(pinR, 0);
+            pinMode(pinR, ANALOG_OUTPUT);
+        }
+        if (pinG > 0) {
+            analogWrite(pinG, 0);
+            pinMode(pinG, ANALOG_OUTPUT);
+        }
+        if (pinB > 0) {
+            analogWrite(pinB, 0);
+            pinMode(pinB, ANALOG_OUTPUT);
+        }
+    }
 }
 
 void RgbLight::on(uint8_t r, uint8_t g, uint8_t b) {
@@ -28,9 +48,27 @@ void RgbLight::color(uint8_t r, uint8_t g, uint8_t b) {
     G = g;
     B = b;
 
-    io->analogWrite(pinR, R);
-    io->analogWrite(pinG, G);
-    io->analogWrite(pinB, B);
+    if (io != nullptr) {
+        if (pinR > 0) {
+            io->analogWrite(pinR, R);
+        }
+        if (pinG > 0) {
+            io->analogWrite(pinG, G);
+        }
+        if (pinB > 0) {
+            io->analogWrite(pinB, B);
+        }
+    } else {
+        if (pinR > 0) {
+            analogWrite(pinR, R);
+        }
+        if (pinG > 0) {
+            analogWrite(pinG, G);
+        }
+        if (pinB > 0) {
+            analogWrite(pinB, B);
+        }
+    }
 }
 
 void RgbLight::off() {

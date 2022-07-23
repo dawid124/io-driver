@@ -8,21 +8,44 @@ RgbwLight::RgbwLight(const String& id, SX1509* io, uint8_t pinR, uint8_t pinG, u
         : RgbLight(id, io, pinR, pinG, pinB), pinW(pinW) {
     W = 0;
     Ww = 0;
+    pinWw = -1;
 
-    rgbww = false;
-    io->analogWrite(pinW, 0);
-    io->pinMode(pinW, ANALOG_OUTPUT);
+    if (io != nullptr) {
+        if (pinW > 0) {
+            io->analogWrite(pinW, 0);
+            io->pinMode(pinW, ANALOG_OUTPUT);
+        }
+    } else {
+        if (pinW > 0) {
+            analogWrite(pinW, 0);
+            pinMode(pinW, ANALOG_OUTPUT);
+        }
+    }
 }
 
 RgbwLight::RgbwLight(const String &id, SX1509 *io, uint8_t pinR, uint8_t pinG, uint8_t pinB, uint8_t pinW,
                      uint8_t pinWw): RgbLight(id, io, pinR, pinG, pinB), pinW(pinW), pinWw(pinWw)  {
     W = 0;
     Ww = 0;
-    rgbww = true;
-    io->analogWrite(pinW, 0);
-    io->analogWrite(pinWw, 0);
-    io->pinMode(pinW, ANALOG_OUTPUT);
-    io->pinMode(pinWw, ANALOG_OUTPUT);
+    if (io != nullptr) {
+        if (pinW > 0) {
+            io->analogWrite(pinW, 0);
+            io->pinMode(pinW, ANALOG_OUTPUT);
+        }
+        if (pinWw > 0) {
+            io->analogWrite(pinWw, 0);
+            io->pinMode(pinWw, ANALOG_OUTPUT);
+        }
+    } else {
+        if (pinW > 0) {
+            analogWrite(pinW, 0);
+            pinMode(pinW, ANALOG_OUTPUT);
+        }
+        if (pinWw > 0) {
+            io->analogWrite(pinWw, 0);
+            io->pinMode(pinWw, ANALOG_OUTPUT);
+        }
+    }
 }
 
 void RgbwLight::on(uint8_t r, uint8_t g, uint8_t b, uint8_t w, uint8_t ww) {
@@ -33,10 +56,21 @@ void RgbwLight::color(uint8_t r, uint8_t g, uint8_t b, uint8_t w, uint8_t ww) {
     RgbLight::color(r, g, b);
 
     W = w;
-    Ww = 0;
-    io->analogWrite(pinW, w);
-    if (rgbww) {
-        Ww = ww;
-        io->analogWrite(pinWw, ww);
+    Ww = ww;
+
+    if (io != nullptr) {
+        if (pinW > 0) {
+            io->analogWrite(pinW, W);
+        }
+        if (pinWw > 0) {
+            io->analogWrite(pinWw, Ww);
+        }
+    } else {
+        if (pinW > 0) {
+            analogWrite(pinW, W);
+        }
+        if (pinWw > 0) {
+            analogWrite(pinWw, Ww);
+        }
     }
 }

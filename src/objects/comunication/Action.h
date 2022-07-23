@@ -18,6 +18,7 @@ public:
     uint8_t brightness;
 
     int animationId;
+    int staticSubMode;
     int speed;
     int time;
     int stepTime;
@@ -25,10 +26,10 @@ public:
     Action(String ioId);
 
     Action(String ioId, String ioType, String action, Color color, uint8_t brightness,
-           int animationId, int speed, int time, int stepTime);
+           int animationId, int staticSubMode, int speed, int time, int stepTime);
 
     Action(String ioId, String action, Color color, uint8_t brightness,
-           int animationId, int speed, int time, int stepTime);
+           int animationId, int staticSubMode, int speed, int time, int stepTime);
 };
 
 

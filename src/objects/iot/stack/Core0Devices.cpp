@@ -38,6 +38,11 @@ void Core0Devices::printDevices() {
         Logger::printlnCore0(String(i) + ": " + device->id);
         i++;
     }
+    Logger::printlnCore0("Initialized Blinds: ");
+    for (auto const& device: blinds) {
+        Logger::printlnCore0(String(i) + ": " + device->id);
+        i++;
+    }
 }
 
 RgbLight* Core0Devices::getRgbById(String id) {
@@ -58,6 +63,14 @@ RgbwLight *Core0Devices::getRgbwById(String id) {
     return nullptr;
 }
 
+Blind *Core0Devices::getBlindById(String id) {
+    for (auto io: blinds) {
+        if (io->id == id) {
+            return io;
+        }
+    }
+    return nullptr;
+}
 
 void Core0Devices::process(Action *action) {
     String ioType = this->idTypeMap[action->ioId];
@@ -65,10 +78,10 @@ void Core0Devices::process(Action *action) {
         RgbwLight *light = getRgbwById(action->ioId);
         Logger::printlnCore0("process: " + String(light->id));
         processRgbwAction(action, *light);
-    } else if (ioType == "RGB") {
-
     } else if (ioType == "BLIND") {
-
+        Blind *blind = getBlindById(action->ioId);
+        Logger::printlnCore0("process: " + String(blind->id));
+        processBlindAction(action, *blind);
     } else if (ioType == "HEATING") {
 
     }
@@ -97,10 +110,30 @@ void Core0Devices::processRgbwAction(Action *action, RgbwLight &light) {
     light.task = timer.every(stepTime, rgbwChange, rgbwChangePtr);
 }
 
+void Core0Devices::processBlindAction(Action *action, Blind &blind) {
+    if (blind.task != (uintptr_t)(NULL)) {
+        timer.cancel(blind.task);
+    }
+
+    if (action->action == "UP") {
+        blind.up();
+        blindTimer.at(action->time, blindClear, &blind);
+    } else if (action->action == "DOWN") {
+        blind.down();
+        blindTimer.at(action->time, blindClear, &blind);
+    }
+}
+
 bool Core0Devices::rgbwChange(RgbwChange *change) {
     bool hasNext = change->nextStep();
     return hasNext;
 }
+
+bool Core0Devices::blindClear(Blind *blind) {
+    blind->clear();
+    return false;
+}
+
 
 void Core0Devices::service() {
     timer.tick();

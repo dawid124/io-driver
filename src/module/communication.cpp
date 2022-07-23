@@ -2,6 +2,7 @@
 // Created by Dawid on 26.02.2022.
 //
 
+#include <objects/iot/blind/Blind.h>
 #include "communication.h"
 
 #define ETH_RESET_PIN 20
@@ -27,6 +28,8 @@ Action *deserializeAction(const JsonObject &action);
 
 void processActions(const JsonArray &actions);
 
+SX1509 *parseLocation(const JsonObject &action);
+
 void setupMqtt() {
     Logger::printlnCore0("Start MQTTClient init ");
     Logger::printCore0(DEVICE_NAME_STR);
@@ -41,7 +44,7 @@ void setupMqtt() {
     IPAddress ip;
     ip.fromString(STR(DEVICE_IP));
     const char *macStr = STR(DEVICE_MAC);
-
+    Logger::printlnCore0("MAC: " + String(macStr));
     byte mac[6];
     parseBytes(macStr, '-', mac, 6, 16);
 
@@ -116,20 +119,22 @@ void actionTopicCallback(char *topic, byte *payload, unsigned int length) {
 void processActions(const JsonArray &actions) {
     Logger::printlnCore0("actions: " + String(actions.size()));
 
-    if (mutex_enter_timeout_ms(&actionCore1MsgMutex, 100000)) {
+//    if (mutex_enter_timeout_ms(&actionCore1MsgMutex, 100000)) {
         Logger::printlnCore0("Start Adding action to queue");
         for (JsonObject action : actions) {
             Action *pAction = deserializeAction(action);
 
 //            Serial.println("IoId: " + String(pAction->ioId) + "ActionType: " + String(core1Devices.idTypeMap[pAction->ioId] == "NEO"));
             if (core1Devices.idTypeMap[pAction->ioId] == "NEO") {
+                mutex_enter_blocking(&actionCore1MsgMutex);
                 actionCore1Msgs.queueEnqueue(pAction);
+                mutex_exit(&actionCore1MsgMutex);
             } else {
                 actionCore0Msgs.queueEnqueue(pAction);
             }
         }
-        mutex_exit(&actionCore1MsgMutex);
-    }
+
+//    }
 }
 
 Action *deserializeAction(const JsonObject &action) {
@@ -140,6 +145,7 @@ Action *deserializeAction(const JsonObject &action) {
     if (action.containsKey("b")) pAction->brightness = action.getMember("b").as<uint8_t>();
 
     if (action.containsKey("an")) pAction->animationId = action.getMember("an").as<int>();
+    if (action.containsKey("ssm")) pAction->staticSubMode = action.getMember("ssm").as<int>();
     if (action.containsKey("s")) pAction->speed = action.getMember("s").as<int>();
 
     if (action.containsKey("t")) pAction->time = action.getMember("t").as<int>();
@@ -180,24 +186,29 @@ void processConfig(const JsonArray &actions) {
 
             core1Devices.neo.push_back(new NeoLight(id, pin, ledCount, neoConfig, reverse));
             core1Devices.idTypeMap[id] = "NEO";
-        } else if (ioType == "RGBW") {
-            const String &location = action.getMember("location").as<String>();
-            SX1509* io;
-            if (location == "EXPANDER_A") io = &core0Devices.ioExpanderA;
-            else if (location == "EXPANDER_B") io = &core0Devices.ioExpanderB;
-            else if (location == "EXPANDER_C") io = &core0Devices.ioExpanderC;
-            else if (location == "EXPANDER_D") io = &core0Devices.ioExpanderD;
+        } else if (ioType == "RGBW" || ioType == "CCT" || ioType == "RGBWW") {
+
+            SX1509 *io = parseLocation(action);
 
             const int &pinR = action.getMember("pinR").as<int>();
             const int &pinG = action.getMember("pinG").as<int>();
             const int &pinB = action.getMember("pinB").as<int>();
             const int &pinW = action.getMember("pinW").as<int>();
+            const int &pinWw = action.getMember("pinWW").as<int>();
 
-            core0Devices.rgbw.push_back(new RgbwLight(id, io, pinR, pinG, pinB, pinW));
+            core0Devices.rgbw.push_back(new RgbwLight(id, io, pinR, pinG, pinB, pinW, pinWw));
             core0Devices.idTypeMap[id] = "RGBW";
         } else if (ioType == "MOTION_SENSOR") {
             const int &pin = action.getMember("pin").as<int>();
-            core0Devices.motionSensors.push_back(new MotionSensor(id, pin));
+            const int &reverse = action.getMember("reverse").as<bool>();
+            core0Devices.motionSensors.push_back(new MotionSensor(id, pin, reverse));
+        } else if (ioType == "BLIND") {
+            const int &upPin = action.getMember("upPin").as<int>();
+            const int &downPin = action.getMember("downPin").as<int>();
+
+            SX1509 *io = parseLocation(action);
+
+            core0Devices.blinds.push_back(new Blind(id, upPin, downPin, io));
         }
     }
     driverState = WORKING;
@@ -208,6 +219,17 @@ void processConfig(const JsonArray &actions) {
     String data = R"({"id":")" + String(DEVICE_NAME_STR) + R"(","type":"READY_FOR_INITIAL_STATE"})";
     client.publish(String(SYNC_TOPIC).c_str(), data.c_str());
 
+}
+
+SX1509 *parseLocation(const JsonObject &action) {
+    const String &location = action.getMember("location").as<String>();
+    SX1509* io;
+    if (location == "EXPANDER_A") io = &core0Devices.ioExpanderA;
+    else if (location == "EXPANDER_B") io = &core0Devices.ioExpanderB;
+    else if (location == "EXPANDER_C") io = &core0Devices.ioExpanderC;
+    else if (location == "EXPANDER_D") io = &core0Devices.ioExpanderD;
+    else io = nullptr;
+    return io;
 }
 
 void addToCore1Mutex(Action *action) {

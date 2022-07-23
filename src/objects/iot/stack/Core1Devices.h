@@ -35,6 +35,8 @@ public:
     void picoLight();
 
     NeoLight* getNeoById(String id);
+
+    void setNeoColor(const Action *action, WS2812FX &fx, uint8_t colorIndex) const;
 };
 
 

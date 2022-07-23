@@ -132,6 +132,8 @@ class WS2812FX : public Adafruit_NeoPixel {
       uint16_t speed;
       uint8_t  mode;
       uint8_t  options;
+      uint8_t  static_sub_mode;
+      uint8_t  static_sub_mode_step_value;
       uint32_t colors[MAX_NUM_COLORS];
     } segment;
 
@@ -182,6 +184,8 @@ class WS2812FX : public Adafruit_NeoPixel {
       setMode(uint8_t m),
       setMode(uint8_t seg, uint8_t m),
       setOptions(uint8_t seg, uint8_t o),
+      setStaticSubMode(uint8_t seg, uint8_t o),
+      setStaticSubModeStepValue(uint8_t seg, uint8_t o),
       setCustomMode(uint16_t (*p)()),
       setCustomShow(void (*p)()),
       setSpeed(uint16_t s),
@@ -190,6 +194,7 @@ class WS2812FX : public Adafruit_NeoPixel {
       decreaseSpeed(uint8_t s),
       setColor(uint8_t r, uint8_t g, uint8_t b),
       setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t w),
+      setColor(uint8_t i, uint8_t r, uint8_t g, uint8_t b, uint8_t w),
       setColor(uint32_t c),
       setColor(uint8_t seg, uint32_t c),
       setColors(uint8_t seg, uint32_t* c),

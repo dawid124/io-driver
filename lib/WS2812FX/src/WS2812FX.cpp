@@ -85,7 +85,6 @@ bool WS2812FX::service() {
       }
     }
     if(doShow) {
-      delay(1); // for ESP32 (see https://forums.adafruit.com/viewtopic.php?f=47&t=117327)
       show();
     }
     _triggered = false;
@@ -170,6 +169,14 @@ void WS2812FX::setOptions(uint8_t seg, uint8_t o) {
   _segments[seg].options = o;
 }
 
+void WS2812FX::setStaticSubMode(uint8_t seg, uint8_t o) {
+    _segments[seg].static_sub_mode = o;
+}
+
+void WS2812FX::setStaticSubModeStepValue(uint8_t seg, uint8_t o) {
+    _segments[seg].static_sub_mode_step_value = o;
+}
+
 void WS2812FX::setSpeed(uint16_t s) {
   setSpeed(0, s);
 }
@@ -194,6 +201,10 @@ void WS2812FX::setColor(uint8_t r, uint8_t g, uint8_t b) {
 
 void WS2812FX::setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
   setColor((((uint32_t)w << 24)| ((uint32_t)r << 16) | ((uint32_t)g << 8)| ((uint32_t)b)));
+}
+
+void WS2812FX::setColor(uint8_t i, uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
+    _segments[0].colors[i] = (((uint32_t)w << 24)| ((uint32_t)r << 16) | ((uint32_t)g << 8)| ((uint32_t)b));
 }
 
 void WS2812FX::setColor(uint32_t c) {
