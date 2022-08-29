@@ -44,6 +44,7 @@ void Core1Devices::process(Action *action) {
 
             fx.setStaticSubMode(0, action->staticSubMode);
             fx.setStaticSubModeStepValue(0, stepValue);
+            fx.setBrightness(255);
             fx.setSpeed(speed);
             setNeoColor(action, fx, 1);
         } else {

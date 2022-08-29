@@ -49,7 +49,7 @@ void setup()
 
     Serial.begin(115200);
 #ifdef APP_DEBUG
-    while (!Serial);
+//    while (!Serial);
 #endif
     init();
 

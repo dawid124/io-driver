@@ -18,6 +18,9 @@
 #include "./module/logger.h"
 #include <map>
 #include <objects/iot/blind/Blind.h>
+#include <objects/change/BlindClean.h>
+#include <objects/iot/switch/Switch.h>
+#include <objects/change/SwitchOff.h>
 
 #define CHANGE_MILLIS 30
 
@@ -27,8 +30,10 @@ public:
     std::vector<RgbwLight*> rgbw;
     std::vector<MotionSensor*> motionSensors;
     std::vector<Blind*> blinds;
-    Timer<256, millis, RgbwChange*> timer;
-    Timer<32, millis, Blind*> blindTimer;
+    std::vector<Switch*> switches;
+    Timer<32, millis, BlindClean*> blindTimer;
+    Timer<16, millis, SwitchOff*> switchTimer;
+    Timer<128, millis, RgbwChange*> timer;
 
     std::map<String,String> idTypeMap;
 
@@ -49,13 +54,16 @@ public:
     RgbLight* getRgbById(String id);
     RgbwLight* getRgbwById(String id);
     Blind* getBlindById(String id);
+    Switch* getSwitchById(String id);
 
 private:
     void processRgbwAction(Action *action, RgbwLight& light);
     void processBlindAction(Action *action, Blind& blind);
-    static bool rgbwChange(RgbwChange *change);
-    static bool blindClear(Blind *blind);
+    void processSwitchAction(Action *action, Switch& switchh);
 
+    static bool rgbwChange(RgbwChange *change);
+    static bool blindClear(BlindClean *clean);
+    static bool switchOff(SwitchOff *clean);
 };
 
 

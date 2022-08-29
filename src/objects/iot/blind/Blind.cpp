@@ -6,44 +6,45 @@
 
 void Blind::up() {
     if (io != nullptr) {
-        io->digitalWrite(upPin, LOW);
-        io->digitalWrite(downPin, HIGH);
+        io->pinMode(upPin, OUTPUT);
+        io->writePin(upPin, LOW);
+        io->pinMode(downPin, INPUT);
     } else {
+        pinMode(upPin, OUTPUT);
         digitalWrite(upPin, LOW);
-        digitalWrite(downPin, HIGH);
+        pinMode(downPin, INPUT);
     }
 }
 
 void Blind::down() {
     if (io != nullptr) {
-        io->digitalWrite(upPin, HIGH);
-        io->digitalWrite(downPin, LOW);
+        io->pinMode(downPin, OUTPUT);
+        io->writePin(downPin, LOW);
+        io->pinMode(upPin, INPUT);
     } else {
-        digitalWrite(upPin, HIGH);
+        pinMode(downPin, OUTPUT);
         digitalWrite(downPin, LOW);
+        pinMode(upPin, INPUT);
     }
 }
 
 void Blind::clear() {
     if (io != nullptr) {
-        io->digitalWrite(upPin, HIGH);
-        io->digitalWrite(downPin, HIGH);
+        io->pinMode(upPin, INPUT);
+        io->pinMode(downPin, INPUT);
     } else {
-        digitalWrite(upPin, HIGH);
-        digitalWrite(downPin, HIGH);
+        pinMode(upPin, INPUT);
+        pinMode(downPin, INPUT);
     }
 }
 
 Blind::Blind(const String& id, uint8_t upPin, uint8_t downPin, SX1509 *io) : IThings(id), upPin(upPin), downPin(downPin), io(io) {
+
     if (io != nullptr) {
-        io->pinMode(upPin, OUTPUT);
-        io->digitalWrite(upPin, HIGH);
-        io->pinMode(downPin, OUTPUT);
-        io->digitalWrite(downPin, HIGH);
+        io->pinMode(upPin, INPUT);
+        io->pinMode(downPin, INPUT);
     } else {
-        pinMode(upPin, OUTPUT);
-        digitalWrite(upPin, HIGH);
-        pinMode(downPin, OUTPUT);
-        digitalWrite(downPin, HIGH);
+        pinMode(upPin, INPUT);
+        pinMode(downPin, INPUT);
     }
 }

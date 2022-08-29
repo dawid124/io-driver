@@ -12,7 +12,8 @@
 #include "pico/multicore.h"
 
 
-#define APP_DEBUG
+//#define APP_DEBUG
+
 
 
 #include "objects/comunication/Action.h"

@@ -43,6 +43,11 @@ void Core0Devices::printDevices() {
         Logger::printlnCore0(String(i) + ": " + device->id);
         i++;
     }
+    Logger::printlnCore0("Initialized Switches: ");
+    for (auto const& device: switches) {
+        Logger::printlnCore0(String(i) + ": " + device->id);
+        i++;
+    }
 }
 
 RgbLight* Core0Devices::getRgbById(String id) {
@@ -72,6 +77,15 @@ Blind *Core0Devices::getBlindById(String id) {
     return nullptr;
 }
 
+Switch *Core0Devices::getSwitchById(String id) {
+    for (auto io: switches) {
+        if (io->id == id) {
+            return io;
+        }
+    }
+    return nullptr;
+}
+
 void Core0Devices::process(Action *action) {
     String ioType = this->idTypeMap[action->ioId];
     if (ioType == "RGBW") {
@@ -82,6 +96,10 @@ void Core0Devices::process(Action *action) {
         Blind *blind = getBlindById(action->ioId);
         Logger::printlnCore0("process: " + String(blind->id));
         processBlindAction(action, *blind);
+    } else if (ioType == "SWITCH") {
+        Switch *io = getSwitchById(action->ioId);
+        Logger::printlnCore0("process: " + String(io->id));
+        processSwitchAction(action, *io);
     } else if (ioType == "HEATING") {
 
     }
@@ -102,39 +120,67 @@ void Core0Devices::processRgbwAction(Action *action, RgbwLight &light) {
     int steps = (int) action->time / stepTime;
 
     if (steps <= 1) {
-        RgbwChange(color, steps, &light).nextStep();
+        RgbwChange(color, steps, &light, 0).nextStep();
         return;
     }
 
-    auto *rgbwChangePtr = new RgbwChange(color, steps, &light);
+    auto *rgbwChangePtr = new RgbwChange(color, steps, &light, action->delay);
     light.task = timer.every(stepTime, rgbwChange, rgbwChangePtr);
 }
 
 void Core0Devices::processBlindAction(Action *action, Blind &blind) {
+
     if (blind.task != (uintptr_t)(NULL)) {
-        timer.cancel(blind.task);
+        blindTimer.cancel(blind.task);
     }
 
+
+    auto *blindCleanPtr = new BlindClean(&blind);
     if (action->action == "UP") {
         blind.up();
-        blindTimer.at(action->time, blindClear, &blind);
+        blind.task = blindTimer.in(action->time, blindClear, blindCleanPtr);
+//        blind.task = blindTimer.in(action->time, blindClear, &blind);
     } else if (action->action == "DOWN") {
         blind.down();
-        blindTimer.at(action->time, blindClear, &blind);
+        blind.task = blindTimer.in(action->time, blindClear, blindCleanPtr);
+//        blind.task = blindTimer.in(action->time, blindClear, &blind);
+    }
+}
+
+void Core0Devices::processSwitchAction(Action *action, Switch &switchh) {
+    if (action->action == "ON") {
+        switchh.on();
+    } else if (action->action == "OFF") {
+        switchh.off();
+    } else if (action->action == "TEMP_ON") {
+        auto *switchOffPtr = new SwitchOff(&switchh);
+        switchh.on();
+        switchTimer.in(action->time, switchOff, switchOffPtr);
     }
 }
 
 bool Core0Devices::rgbwChange(RgbwChange *change) {
+    if (change->delay > 0) {
+        if (millis() < change->delay) {
+            return true;
+        } else {
+            change->delay = 0;
+        }
+    }
     bool hasNext = change->nextStep();
     return hasNext;
 }
 
-bool Core0Devices::blindClear(Blind *blind) {
-    blind->clear();
-    return false;
+bool Core0Devices::blindClear(BlindClean *clean) {
+    return clean->clean();
 }
 
+bool Core0Devices::switchOff(SwitchOff *switchh) {
+    return switchh->off();
+}
 
 void Core0Devices::service() {
+    blindTimer.tick();
+    switchTimer.tick();
     timer.tick();
 }

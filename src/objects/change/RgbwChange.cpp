@@ -4,7 +4,8 @@
 
 #include "RgbwChange.h"
 
-RgbwChange::RgbwChange(const Color &color, int steps, RgbwLight *light) : color(color), steps(steps), light(light) {
+RgbwChange::RgbwChange(const Color &color, int steps, RgbwLight *light, int delay)
+        : color(color), steps(steps), light(light), delay(delay) {
     rStep = ((float) (color.r - light->R)) / (float) steps;
     gStep = ((float) (color.g - light->G)) / (float) steps;
     bStep = ((float) (color.b - light->B)) / (float) steps;

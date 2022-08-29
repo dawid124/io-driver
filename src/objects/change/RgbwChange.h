@@ -11,9 +11,9 @@
 
 class RgbwChange {
 private:
+    RgbwLight *light;
     Color color;
     int steps;
-    RgbwLight *light;
 
     float rStep;
     float gStep;
@@ -27,7 +27,8 @@ private:
     float wVal;
     float wwVal;
 public:
-    RgbwChange(const Color &color, int steps, RgbwLight *light);
+    int delay;
+    RgbwChange(const Color &color, int steps, RgbwLight *light, int delay);
     bool nextStep();
 };
 

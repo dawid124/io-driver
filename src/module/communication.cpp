@@ -3,6 +3,7 @@
 //
 
 #include <objects/iot/blind/Blind.h>
+#include <objects/iot/switch/Switch.h>
 #include "communication.h"
 
 #define ETH_RESET_PIN 20
@@ -24,7 +25,7 @@ Core1Devices core1Devices;
 
 DriverState driverState;
 
-Action *deserializeAction(const JsonObject &action);
+Action *deserializeAction(const JsonObject &action, int nowTime);
 
 void processActions(const JsonArray &actions);
 
@@ -122,9 +123,8 @@ void processActions(const JsonArray &actions) {
 //    if (mutex_enter_timeout_ms(&actionCore1MsgMutex, 100000)) {
         Logger::printlnCore0("Start Adding action to queue");
         for (JsonObject action : actions) {
-            Action *pAction = deserializeAction(action);
+            Action *pAction = deserializeAction(action, nowTime);
 
-//            Serial.println("IoId: " + String(pAction->ioId) + "ActionType: " + String(core1Devices.idTypeMap[pAction->ioId] == "NEO"));
             if (core1Devices.idTypeMap[pAction->ioId] == "NEO") {
                 mutex_enter_blocking(&actionCore1MsgMutex);
                 actionCore1Msgs.queueEnqueue(pAction);
@@ -137,7 +137,7 @@ void processActions(const JsonArray &actions) {
 //    }
 }
 
-Action *deserializeAction(const JsonObject &action) {
+Action *deserializeAction(const JsonObject &action, int nowTime) {
     const String &ioId = action.getMember("id").as<String>();
     auto *pAction = new Action(ioId);
 
@@ -150,6 +150,13 @@ Action *deserializeAction(const JsonObject &action) {
 
     if (action.containsKey("t")) pAction->time = action.getMember("t").as<int>();
     if (action.containsKey("st")) pAction->stepTime = action.getMember("st").as<int>();
+
+    if (action.containsKey("d")) {
+        int delay = action.getMember("d").as<int>();
+        pAction->delay = nowTime + delay;
+    } else {
+        pAction->delay = 0;
+    }
 
     if (action.containsKey("c")) {
         Color ioColor(0, 0, 0, 255);
@@ -203,12 +210,21 @@ void processConfig(const JsonArray &actions) {
             const int &reverse = action.getMember("reverse").as<bool>();
             core0Devices.motionSensors.push_back(new MotionSensor(id, pin, reverse));
         } else if (ioType == "BLIND") {
-            const int &upPin = action.getMember("upPin").as<int>();
-            const int &downPin = action.getMember("downPin").as<int>();
+            const int &upPin = action.getMember("pinUp").as<int>();
+            const int &downPin = action.getMember("pinDown").as<int>();
 
             SX1509 *io = parseLocation(action);
 
             core0Devices.blinds.push_back(new Blind(id, upPin, downPin, io));
+            core0Devices.idTypeMap[id] = "BLIND";
+        } else if (ioType == "SWITCH") {
+            const int &pin = action.getMember("pin").as<int>();
+            const String &type = action.getMember("type").as<String>();
+
+            SX1509 *io = parseLocation(action);
+
+            core0Devices.switches.push_back(new Switch(id, pin, type, io));
+            core0Devices.idTypeMap[id] = "SWITCH";
         }
     }
     driverState = WORKING;
