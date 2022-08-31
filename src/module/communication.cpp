@@ -49,6 +49,7 @@ void setupMqtt() {
     byte mac[6];
     parseBytes(macStr, '-', mac, 6, 16);
 
+//    Ethernet.begin(mac, IPAddress(192, 168, 0, 121));
     Ethernet.begin(mac);
 
     Logger::printlnCore0(F("Connected! IP address: "));
@@ -111,6 +112,8 @@ void actionTopicCallback(char *topic, byte *payload, unsigned int length) {
 
 
         Logger::printlnCore0("Total allocated space (uordblks):      " + String(mallinfo().uordblks));
+
+
     } catch (...) {
         Logger::printlnCore0("Error on parse action msg");
     }
@@ -120,21 +123,20 @@ void actionTopicCallback(char *topic, byte *payload, unsigned int length) {
 void processActions(const JsonArray &actions) {
     Logger::printlnCore0("actions: " + String(actions.size()));
 
-//    if (mutex_enter_timeout_ms(&actionCore1MsgMutex, 100000)) {
         Logger::printlnCore0("Start Adding action to queue");
+
+        int nowTime = millis();
+
         for (JsonObject action : actions) {
             Action *pAction = deserializeAction(action, nowTime);
 
             if (core1Devices.idTypeMap[pAction->ioId] == "NEO") {
-                mutex_enter_blocking(&actionCore1MsgMutex);
                 actionCore1Msgs.queueEnqueue(pAction);
-                mutex_exit(&actionCore1MsgMutex);
             } else {
                 actionCore0Msgs.queueEnqueue(pAction);
             }
         }
 
-//    }
 }
 
 Action *deserializeAction(const JsonObject &action, int nowTime) {
@@ -172,7 +174,6 @@ Action *deserializeAction(const JsonObject &action, int nowTime) {
 
         pAction->color = ioColor;
     }
-
     return pAction;
 }
 
@@ -246,13 +247,6 @@ SX1509 *parseLocation(const JsonObject &action) {
     else if (location == "EXPANDER_D") io = &core0Devices.ioExpanderD;
     else io = nullptr;
     return io;
-}
-
-void addToCore1Mutex(Action *action) {
-    if (mutex_enter_timeout_ms(&actionCore1MsgMutex, 100000)) {
-        actionCore1Msgs.queueEnqueue(action);
-        mutex_exit(&actionCore1MsgMutex);
-    }
 }
 
 unsigned long mqttPubTime = 0;

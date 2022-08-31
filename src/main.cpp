@@ -3,6 +3,8 @@
 
 void processSensors();
 
+void moveCore1Msgs();
+
 //#define LED_PIN_V1     10  // virtual digital pin used to drive the virtual LED strip
 //#define LED_PIN_P1     11  // physical digital pin used to drive the first physical LED strip
 //#define LED_PIN_P2     12  // physical digital pin used to drive the second physical LED strip
@@ -38,20 +40,22 @@ void init() {
             initDevices();
             reconnectTimeout = millis() + RESENT_TIMEOUT;
         }
+        mqttService();
     }
-    mqttService();
 
     pinMode(LED_BUILTIN, OUTPUT);
 }
-void setup()
-{
-    rp2040.idleOtherCore();
+
+void setup() {
+//    rp2040.idleOtherCore();
 
     Serial.begin(115200);
 #ifdef APP_DEBUG
 //    while (!Serial);
 #endif
+
     init();
+
 
 
 //    ws2812fx_v1.init();
@@ -67,17 +71,40 @@ void setup()
 //
 //    ws2812fx_v1.setCustomShow(myCustomShow);
 
-    rp2040.resumeOtherCore();
+//    rp2040.resumeOtherCore();
 
     Logger::printlnCore0("configuration finished");
 }
-//int lastTime = millis();
-void loop()
-{
 
-//    int startMicros = millis();
+const int animations[] = {
+        FX_MODE_BLINK,
+        FX_MODE_COLOR_WIPE,
+        FX_MODE_RANDOM_COLOR,
+        FX_MODE_RAINBOW,
+        FX_MODE_RAINBOW_CYCLE,
+        FX_MODE_SCAN,
+        FX_MODE_DUAL_SCAN,
+        FX_MODE_THEATER_CHASE,
+        FX_MODE_THEATER_CHASE_RAINBOW,
+        FX_MODE_RUNNING_LIGHTS,
+        FX_MODE_TWINKLE,
+        FX_MODE_SPARKLE,
+        FX_MODE_HYPER_SPARKLE,
+        FX_MODE_CHASE_WHITE,
+        FX_MODE_RUNNING_RED_BLUE,
+        FX_MODE_LARSON_SCANNER,
+//        FX_MODE_FIREWORKS,
+        FX_MODE_MERRY_CHRISTMAS,
+        FX_MODE_HALLOWEEN,
+        FX_MODE_CIRCUS_COMBUSTUS,
+        FX_MODE_FIRE_FLICKER_INTENSE,
+        FX_MODE_TWINKLEFOX,
+        FX_MODE_RAIN
+        };
+
+void loop() {
+    int startMicros = micros();
     mqttService();
-//    Serial.println("\n" + String(millis() - startMicros));
     core0Devices.service();
 
     if (actionCore0Msgs.rear > 0) {
@@ -87,15 +114,21 @@ void loop()
             delete pAction;
         }
     }
+    if (actionCore1Msgs.rear > 0) {
+        while (actionCore1Msgs.rear > 0) {
+            Action* pAction = actionCore1Msgs.queueDequeue();
+
+            core1Devices.process(pAction);
+            delete pAction;
+        }
+    }
 
     processSensors();
-
-
-//if ((millis() - lastTime) > 10) {
-//    Serial.println("\nTime: " + String(millis() - lastTime));
-//}
-//    lastTime = millis();
+    core1Devices.service();
+    int endMicros = micros();
+//    Serial.println("cycle time: " + String(endMicros - startMicros));
 }
+
 
 void processSensors() {
     for (auto &sensor : core0Devices.motionSensors) {
@@ -104,37 +137,4 @@ void processSensors() {
             publishSensor(sensor->id, sensor->currentState);
         }
     }
-}
-
-void loop1() {
-//    ws2812fx_v1.service();
-    core1Devices.service();
-
-//    if (mutex_enter_timeout_ms(&actionCore1MsgMutex, 0)) {
-    mutex_enter_blocking	(&actionCore1MsgMutex);
-
-    while (actionCore1Msgs.rear > 0) {
-//            Logger::printlnCore1("Start Processing: ");
-            Action* pAction = actionCore1Msgs.queueDequeue();
-            core1Devices.process(pAction);
-            delete pAction;
-        }
-//        if (actionCore1Msgs.rear > 0) {
-//            Action* pAction = actionCore1Msgs.queueDequeue();
-//            core1Devices.process(pAction);
-//            delete pAction;
-//        }
-
-//        if (!actionCore1Msgs.empty()) {
-//
-//            Action *pAction = actionCore1Msgs.front();
-//            core1Devices.process(pAction);
-//
-//            delete pAction;
-//            actionCore1Msgs.erase(actionCore1Msgs.begin());
-//        }
-        mutex_exit(&actionCore1MsgMutex);
-//    }
-
-
 }

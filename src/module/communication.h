@@ -33,8 +33,6 @@ void actionTopicCallback(char *topic, byte *payload, unsigned int length);
 
 void mqttService();
 
-void addToCore1Mutex(Action *action);
-
 void resetENC();
 
 void publishSensor(const String& id, bool state);

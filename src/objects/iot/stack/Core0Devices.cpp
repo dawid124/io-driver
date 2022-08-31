@@ -113,6 +113,8 @@ void Core0Devices::processRgbwAction(Action *action, RgbwLight &light) {
 
     Color color = action->color;;
     color.setBrightness(action->brightness);
+
+//    light.color(color.r,color.g,color.b,color.w,color.ww);
     int stepTime = CHANGE_MILLIS;
     if (action->stepTime > 0) {
         stepTime = action->stepTime;

@@ -48,11 +48,13 @@ void Core1Devices::process(Action *action) {
             fx.setSpeed(speed);
             setNeoColor(action, fx, 1);
         } else {
-            fx.setColor(1, 0, 0, 0, 0);
-            setNeoColor(action, fx, 0);
-            if (fx.getSpeed() != action->speed) {
+//            fx.setColor(1, 0, 0, 0, 0);
+//            fx.setColor(0, action->color.r, action->color.g, action->color.b, action->color.w);
+            fx.setColor(action->color.r, action->color.g, action->color.b, action->color.w);
+            fx.setBrightness(action->brightness);
+//            setNeoColor(action, fx, 0);
+//            fx.setSpeed(100);
                 fx.setSpeed(action->speed);
-            }
         }
 
         if (!fx.isRunning()) {
