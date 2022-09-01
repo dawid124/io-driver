@@ -25,6 +25,8 @@ Core1Devices core1Devices;
 
 DriverState driverState;
 
+int timeMillis = millis();
+
 Action *deserializeAction(const JsonObject &action, int nowTime);
 
 void processActions(const JsonArray &actions);
@@ -108,34 +110,39 @@ void actionTopicCallback(char *topic, byte *payload, unsigned int length) {
         } else if (doc.containsKey("configs") && driverState == READY_FOR_CONFIG) {
             const JsonArray &config = doc.getMember("configs").as<JsonArray>();
             processConfig(config);
+
+            Logger::printlnCore0("Finish process config");
         }
 
 
-        Logger::printlnCore0("Total allocated space (uordblks):      " + String(mallinfo().uordblks));
+
+
+//        Logger::printlnCore0("Total allocated space (uordblks):      " + String(mallinfo().uordblks));
 
 
     } catch (...) {
         Logger::printlnCore0("Error on parse action msg");
     }
-
+    Serial.print("\nTime: " + String(millis() - timeMillis));
+    timeMillis = millis();
 }
 
 void processActions(const JsonArray &actions) {
     Logger::printlnCore0("actions: " + String(actions.size()));
 
-        Logger::printlnCore0("Start Adding action to queue");
+    Logger::printlnCore0("Start Adding action to queue");
 
-        int nowTime = millis();
+    int nowTime = millis();
 
-        for (JsonObject action : actions) {
-            Action *pAction = deserializeAction(action, nowTime);
+    for (JsonObject action : actions) {
+        Action *pAction = deserializeAction(action, nowTime);
 
-            if (core1Devices.idTypeMap[pAction->ioId] == "NEO") {
-                actionCore1Msgs.queueEnqueue(pAction);
-            } else {
-                actionCore0Msgs.queueEnqueue(pAction);
-            }
+        if (core1Devices.idTypeMap[pAction->ioId] == "NEO") {
+            actionCore1Msgs.queueEnqueue(pAction);
+        } else {
+            actionCore0Msgs.queueEnqueue(pAction);
         }
+    }
 
 }
 
@@ -179,54 +186,57 @@ Action *deserializeAction(const JsonObject &action, int nowTime) {
 
 void processConfig(const JsonArray &actions) {
     Logger::printlnCore0("configs: " + String(actions.size()));
+    try {
+        for (JsonObject action : actions) {
+            const String &ioType = action.getMember("ioType").as<String>();
+            const String &id = action.getMember("id").as<String>();
+            Logger::printlnCore0("id: " + String(id));
+            if (ioType == "NEO") {
+                const String &neoType = action.getMember("neoType").as<String>();
+                const bool &reverse = action.getMember("neoType").as<bool>();
+                const int &ledCount = action.getMember("ledCount").as<int>();
+                const int &pin = action.getMember("pin").as<int>();
+                int neoConfig = NEO_GRB + NEO_KHZ800;
+                if (neoType == "NEO_GRBW") neoConfig = NEO_RGBW + NEO_KHZ800;
 
-    for (JsonObject action : actions) {
+                core1Devices.neo.push_back(new NeoLight(id, pin, ledCount, neoConfig, reverse));
+                core1Devices.idTypeMap[id] = "NEO";
+            } else if (ioType == "RGBW" || ioType == "CCT" || ioType == "RGBWW") {
+                SX1509 *io = parseLocation(action);
 
-        const String &ioType = action.getMember("ioType").as<String>();
-        const String &id = action.getMember("id").as<String>();
-        if (ioType == "NEO") {
-            const String &neoType = action.getMember("neoType").as<String>();
-            const bool &reverse = action.getMember("neoType").as<bool>();
-            const int &ledCount = action.getMember("ledCount").as<int>();
-            const int &pin = action.getMember("pin").as<int>();
-            int neoConfig = NEO_GRB + NEO_KHZ800;
-            if (neoType == "NEO_GRBW") neoConfig = NEO_RGBW + NEO_KHZ800;
+                const int &pinR = action.getMember("pinR").as<int>();
+                const int &pinG = action.getMember("pinG").as<int>();
+                const int &pinB = action.getMember("pinB").as<int>();
+                const int &pinW = action.getMember("pinW").as<int>();
+                const int &pinWw = action.getMember("pinWW").as<int>();
 
-            core1Devices.neo.push_back(new NeoLight(id, pin, ledCount, neoConfig, reverse));
-            core1Devices.idTypeMap[id] = "NEO";
-        } else if (ioType == "RGBW" || ioType == "CCT" || ioType == "RGBWW") {
+                auto *x = new RgbwLight(id, io, pinR, pinG, pinB, pinW, pinWw);
+                core0Devices.rgbw.push_back(x);
+                core0Devices.idTypeMap[id] = "RGBW";
+            } else if (ioType == "MOTION_SENSOR") {
+                const int &pin = action.getMember("pin").as<int>();
+                const int &reverse = action.getMember("reverse").as<bool>();
+                core0Devices.motionSensors.push_back(new MotionSensor(id, pin, reverse));
+            } else if (ioType == "BLIND") {
+                const int &upPin = action.getMember("pinUp").as<int>();
+                const int &downPin = action.getMember("pinDown").as<int>();
 
-            SX1509 *io = parseLocation(action);
+                SX1509 *io = parseLocation(action);
 
-            const int &pinR = action.getMember("pinR").as<int>();
-            const int &pinG = action.getMember("pinG").as<int>();
-            const int &pinB = action.getMember("pinB").as<int>();
-            const int &pinW = action.getMember("pinW").as<int>();
-            const int &pinWw = action.getMember("pinWW").as<int>();
+                core0Devices.blinds.push_back(new Blind(id, upPin, downPin, io));
+                core0Devices.idTypeMap[id] = "BLIND";
+            } else if (ioType == "SWITCH") {
+                const int &pin = action.getMember("pin").as<int>();
+                const String &type = action.getMember("type").as<String>();
 
-            core0Devices.rgbw.push_back(new RgbwLight(id, io, pinR, pinG, pinB, pinW, pinWw));
-            core0Devices.idTypeMap[id] = "RGBW";
-        } else if (ioType == "MOTION_SENSOR") {
-            const int &pin = action.getMember("pin").as<int>();
-            const int &reverse = action.getMember("reverse").as<bool>();
-            core0Devices.motionSensors.push_back(new MotionSensor(id, pin, reverse));
-        } else if (ioType == "BLIND") {
-            const int &upPin = action.getMember("pinUp").as<int>();
-            const int &downPin = action.getMember("pinDown").as<int>();
+                SX1509 *io = parseLocation(action);
 
-            SX1509 *io = parseLocation(action);
-
-            core0Devices.blinds.push_back(new Blind(id, upPin, downPin, io));
-            core0Devices.idTypeMap[id] = "BLIND";
-        } else if (ioType == "SWITCH") {
-            const int &pin = action.getMember("pin").as<int>();
-            const String &type = action.getMember("type").as<String>();
-
-            SX1509 *io = parseLocation(action);
-
-            core0Devices.switches.push_back(new Switch(id, pin, type, io));
-            core0Devices.idTypeMap[id] = "SWITCH";
+                core0Devices.switches.push_back(new Switch(id, pin, type, io));
+                core0Devices.idTypeMap[id] = "SWITCH";
+            }
         }
+    } catch (...) {
+       Serial.printf("Error");
     }
     driverState = WORKING;
 
@@ -240,7 +250,7 @@ void processConfig(const JsonArray &actions) {
 
 SX1509 *parseLocation(const JsonObject &action) {
     const String &location = action.getMember("location").as<String>();
-    SX1509* io;
+    SX1509 *io;
     if (location == "EXPANDER_A") io = &core0Devices.ioExpanderA;
     else if (location == "EXPANDER_B") io = &core0Devices.ioExpanderB;
     else if (location == "EXPANDER_C") io = &core0Devices.ioExpanderC;

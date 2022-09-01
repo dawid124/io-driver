@@ -23,6 +23,7 @@ extern Core0Devices core0Devices;
 extern Core1Devices core1Devices;
 
 extern DriverState driverState;
+extern int timeMillis;
 
 void setupMqtt();
 void initDevices();

@@ -1,3 +1,4 @@
+#include <Wire.h>
 #include <module/communication.h>
 #include <Arduino.h>
 
@@ -26,11 +27,15 @@ unsigned long reconnectTimeout;
 
 void init() {
     Logger::printlnCore0("\nStart Initializing ");
+
     Logger::printlnCore0(STR(DEVICE_NAME));
+
+    Wire.begin();
 
     sleep_ms(1000);
     setupMqtt();
     sleep_ms(1000);
+    Logger::printlnCore0("\nCPU " + String(rp2040.f_cpu()));
     core0Devices.init();
 
 
@@ -44,10 +49,11 @@ void init() {
     }
 
     pinMode(LED_BUILTIN, OUTPUT);
+
 }
 
 void setup() {
-//    rp2040.idleOtherCore();
+    rp2040.idleOtherCore();
 
     Serial.begin(115200);
 #ifdef APP_DEBUG
@@ -71,36 +77,10 @@ void setup() {
 //
 //    ws2812fx_v1.setCustomShow(myCustomShow);
 
-//    rp2040.resumeOtherCore();
+    rp2040.resumeOtherCore();
 
     Logger::printlnCore0("configuration finished");
 }
-
-const int animations[] = {
-        FX_MODE_BLINK,
-        FX_MODE_COLOR_WIPE,
-        FX_MODE_RANDOM_COLOR,
-        FX_MODE_RAINBOW,
-        FX_MODE_RAINBOW_CYCLE,
-        FX_MODE_SCAN,
-        FX_MODE_DUAL_SCAN,
-        FX_MODE_THEATER_CHASE,
-        FX_MODE_THEATER_CHASE_RAINBOW,
-        FX_MODE_RUNNING_LIGHTS,
-        FX_MODE_TWINKLE,
-        FX_MODE_SPARKLE,
-        FX_MODE_HYPER_SPARKLE,
-        FX_MODE_CHASE_WHITE,
-        FX_MODE_RUNNING_RED_BLUE,
-        FX_MODE_LARSON_SCANNER,
-//        FX_MODE_FIREWORKS,
-        FX_MODE_MERRY_CHRISTMAS,
-        FX_MODE_HALLOWEEN,
-        FX_MODE_CIRCUS_COMBUSTUS,
-        FX_MODE_FIRE_FLICKER_INTENSE,
-        FX_MODE_TWINKLEFOX,
-        FX_MODE_RAIN
-        };
 
 void loop() {
     int startMicros = micros();

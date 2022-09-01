@@ -4,7 +4,7 @@
 
 #include "RgbwLight.h"
 
-RgbwLight::RgbwLight(const String& id, SX1509* io, uint8_t pinR, uint8_t pinG, uint8_t pinB, uint8_t pinW)
+RgbwLight::RgbwLight(const String& id, SX1509* io, int pinR, int pinG, int pinB, int pinW)
         : RgbLight(id, io, pinR, pinG, pinB), pinW(pinW) {
     W = 0;
     Ww = 0;
@@ -23,27 +23,27 @@ RgbwLight::RgbwLight(const String& id, SX1509* io, uint8_t pinR, uint8_t pinG, u
     }
 }
 
-RgbwLight::RgbwLight(const String &id, SX1509 *io, uint8_t pinR, uint8_t pinG, uint8_t pinB, uint8_t pinW,
-                     uint8_t pinWw): RgbLight(id, io, pinR, pinG, pinB), pinW(pinW), pinWw(pinWw)  {
+RgbwLight::RgbwLight(const String &id, SX1509 *io, int pinR, int pinG, int pinB, int pinW,
+                     int pinWw): RgbLight(id, io, pinR, pinG, pinB), pinW(pinW), pinWw(pinWw)  {
     W = 0;
     Ww = 0;
     if (io != nullptr) {
         if (pinW >= 0) {
-            io->analogWrite(pinW, 0);
             io->pinMode(pinW, ANALOG_OUTPUT);
+            io->analogWrite(pinW, 0);
         }
         if (pinWw >= 0) {
-            io->analogWrite(pinWw, 0);
             io->pinMode(pinWw, ANALOG_OUTPUT);
+            io->analogWrite(pinWw, 0);
         }
     } else {
         if (pinW >= 0) {
-            analogWrite(pinW, 255);
             pinMode(pinW, ANALOG_OUTPUT);
+            analogWrite(pinW, 255);
         }
         if (pinWw >= 0) {
-            io->analogWrite(pinWw, 255);
             io->pinMode(pinWw, ANALOG_OUTPUT);
+            io->analogWrite(pinWw, 255);
         }
     }
 }

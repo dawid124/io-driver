@@ -42,17 +42,16 @@ void Core1Devices::process(Action *action) {
             int stepValue = (int) 255 / steps;
             int speed = action->time / steps;
 
-//            fx.setStaticSubMode(0, action->staticSubMode);
-//            fx.setStaticSubModeStepValue(0, stepValue);
+            fx.setStaticSubMode(0, action->staticSubMode);
+            fx.setStaticSubModeStepValue(0, stepValue);
             fx.setBrightness(255);
             fx.setSpeed(speed);
             setNeoColor(action, fx, 1);
         } else {
 //            fx.setColor(1, 0, 0, 0, 0);
 //            fx.setColor(0, action->color.r, action->color.g, action->color.b, action->color.w);
-            fx.setColor(action->color.r, action->color.g, action->color.b, action->color.w);
             fx.setBrightness(action->brightness);
-//            setNeoColor(action, fx, 0);
+            setNeoColor(action, fx, 0);
 //            fx.setSpeed(100);
                 fx.setSpeed(action->speed);
         }
@@ -69,8 +68,7 @@ void Core1Devices::setNeoColor(const Action *action, WS2812FX &fx, uint8_t color
     uint8_t g = (int) ((float) action->color.g * percent);
     uint8_t b = (int) ((float) action->color.b * percent);
     uint8_t w = (int) ((float) action->color.w * percent);
-//    fx.setColor(colorIndex, r, g, b, w);
-    fx.setColor(r, g, b, w);
+    fx.setColor(colorIndex, r, g, b, w);
 }
 
 void Core1Devices::test(Action *action) {

@@ -4,7 +4,7 @@
 
 #include "RgbLight.h"
 
-RgbLight::RgbLight(const String& id, SX1509 *io, uint8_t pinR, uint8_t pinG, uint8_t pinB)
+RgbLight::RgbLight(const String& id, SX1509 *io, int pinR, int pinG, int pinB)
         : IThings(id), io(io), pinR(pinR), pinG(pinG), pinB(pinB) {
     R = 0;
     G = 0;
@@ -12,29 +12,29 @@ RgbLight::RgbLight(const String& id, SX1509 *io, uint8_t pinR, uint8_t pinG, uin
 
     if (io != nullptr) {
         if (pinR>= 0) {
-            io->analogWrite(pinR, 0);
             io->pinMode(pinR, ANALOG_OUTPUT);
+            io->analogWrite(pinR, 0);
         }
         if (pinG >= 0) {
-            io->analogWrite(pinG, 0);
             io->pinMode(pinG, ANALOG_OUTPUT);
+            io->analogWrite(pinG, 0);
         }
         if (pinB >= 0) {
-            io->analogWrite(pinB, 0);
             io->pinMode(pinB, ANALOG_OUTPUT);
+            io->analogWrite(pinB, 0);
         }
     } else {
         if (pinR >= 0) {
-            analogWrite(pinR, 255);
             pinMode(pinR, ANALOG_OUTPUT);
+            analogWrite(pinR, 255);
         }
         if (pinG >= 0) {
-            analogWrite(pinG, 255);
             pinMode(pinG, ANALOG_OUTPUT);
+            analogWrite(pinG, 255);
         }
         if (pinB >= 0) {
-            analogWrite(pinB, 255);
             pinMode(pinB, ANALOG_OUTPUT);
+            analogWrite(pinB, 255);
         }
     }
 }

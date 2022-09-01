@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <Arduino.h>
+#include "rp2040.h"
 #include <Wire.h>
 #include <SPI.h>
 #include "EthernetENC.h"
@@ -10,7 +11,6 @@
 #include "pico/stdlib.h"
 #include <ArduinoJson.h>
 #include "pico/multicore.h"
-
 
 //#define APP_DEBUG
 

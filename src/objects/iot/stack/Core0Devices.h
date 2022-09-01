@@ -6,6 +6,9 @@
 #define IO_DRIVER_CORE0DEVICES_H
 
 #include <Arduino.h>
+
+
+#include <Wire.h>           // Include the I2C library (required)
 #include <SparkFunSX1509.h>
 #include <objects/iot/sensor/MotionSensor.h>
 #include <objects/comunication/Action.h>
@@ -34,6 +37,8 @@ public:
     Timer<32, millis, BlindClean*> blindTimer;
     Timer<16, millis, SwitchOff*> switchTimer;
     Timer<128, millis, RgbwChange*> timer;
+
+//    TwoWire Wire;
 
     std::map<String,String> idTypeMap;
 
