@@ -59,6 +59,19 @@ uint16_t WS2812FX::mode_static(void) {
             _seg->colors[0] = _seg->colors[1];
         }
         return _seg->speed;
+    } else if (_seg->static_sub_mode == 10) {
+        this->clear();
+//        fill( _seg->colors[0], _seg->start, _seg->intParam);
+        fill( _seg->colors[0], _seg_len - _seg->intParam, _seg_len);
+        return _seg->speed;
+    } else if (_seg->static_sub_mode == 11) {
+        this->clear();
+        if (_seg->intParam <= 0) return _seg->speed;
+        uint16_t center = (int) (_seg_len / 2);
+        uint16_t start = min(center - _seg->intParam, 0);
+        uint16_t count =  _seg->intParam * 2;
+        fill( _seg->colors[0], start, count);
+        return _seg->speed;
     } else {
         // Default Static
 

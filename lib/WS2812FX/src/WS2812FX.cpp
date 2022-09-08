@@ -199,6 +199,11 @@ void WS2812FX::setStaticSubMode(uint8_t seg, uint8_t o) {
     _segments[seg].static_sub_mode = o;
 }
 
+void WS2812FX::setIntParam(uint8_t seg, int v) {
+    _segments[seg].intParam = v;
+}
+
+
 void WS2812FX::setStaticSubModeStepValue(uint8_t seg, uint8_t o) {
     _segments[seg].static_sub_mode_step_value = o;
 }

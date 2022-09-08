@@ -7,7 +7,7 @@
 void Core1Devices::printDevices() {
     int i = 0;
     Logger::printlnCore1("Initialized devices NEO: ");
-    for (auto const& device: neo) {
+    for (auto const &device: neo) {
         Logger::printlnCore1(String(i) + ": " + device->id);
         i++;
     }
@@ -29,37 +29,41 @@ void Core1Devices::process(Action *action) {
 //    if (action->brightness == 0) {
 //        fx.stop();
 //    } else {
-        if (fx.getMode() != action->animationId) {
-            fx.setMode(action->animationId);
-        }
+    if (action->animationId >= 0 && fx.getMode() != action->animationId) {
+        fx.setMode(action->animationId);
+    }
 
-        if (action->animationId == 0 && action->staticSubMode > 0) {
-            int stepTime = 30;
-            if (action->stepTime > 0) {
-                stepTime = action->stepTime;
-            }
-            int steps = (int) action->time / stepTime;
-            int stepValue = (int) 255 / steps;
-            int speed = action->time / steps;
-
-            fx.setStaticSubMode(0, action->staticSubMode);
-            fx.setStaticSubModeStepValue(0, stepValue);
-            fx.setBrightness(255);
-            fx.setSpeed(speed);
-            setNeoColor(action, fx, 1);
-        } else {
-//            fx.setColor(1, 0, 0, 0, 0);
-//            fx.setColor(0, action->color.r, action->color.g, action->color.b, action->color.w);
-            fx.setBrightness(action->brightness);
-            setNeoColor(action, fx, 0);
-//            fx.setSpeed(100);
-                fx.setSpeed(action->speed);
+    if (action->animationId == 0 && action->staticSubMode == 0) {
+        int stepTime = 30;
+        if (action->stepTime > 0) {
+            stepTime = action->stepTime;
         }
+        int steps = (int) action->time / stepTime;
+        int stepValue = (int) 255 / steps;
+        int speed = action->time / steps;
 
-        if (!fx.isRunning()) {
-            fx.start();
-        }
-//    }
+        fx.setStaticSubMode(0, action->staticSubMode);
+        fx.setStaticSubModeStepValue(0, stepValue);
+        fx.setBrightness(255);
+        fx.setSpeed(speed);
+        setNeoColor(action, fx, 1);
+    } else if (action->animationId == 0 && (action->staticSubMode == 10 || action->staticSubMode == 11)) {
+        fx.setStaticSubMode(0, action->staticSubMode);
+        fx.setIntParam(0, action->i);
+        fx.setBrightness(255);
+        if (action->speed > 0) fx.setSpeed(action->speed);
+        setNeoColor(action, fx, 0);
+    } else {
+        //            fx.setColor(1, 0, 0, 0, 0);
+        //            fx.setColor(0, action->color.r, action->color.g, action->color.b, action->color.w);
+        fx.setBrightness(action->brightness);
+        setNeoColor(action, fx, 0);
+        if (action->speed > 0) fx.setSpeed(action->speed);
+    }
+
+    if (!fx.isRunning()) {
+        fx.start();
+    }
 }
 
 void Core1Devices::setNeoColor(const Action *action, WS2812FX &fx, uint8_t colorIndex) const {
@@ -84,8 +88,7 @@ void Core1Devices::test(Action *action) {
 }
 
 void Core1Devices::picoLight() {
-    if ((millis() > change_color_timeout) || (change_color_timeout == 0))
-    {
+    if ((millis() > change_color_timeout) || (change_color_timeout == 0)) {
         state = !state;
         digitalWrite(LED_BUILTIN, state);
         change_color_timeout = millis() + STATUS_LED_INTERVAL;

@@ -138,11 +138,14 @@ void processActions(const JsonArray &actions) {
         Action *pAction = deserializeAction(action, nowTime);
 
         if (core1Devices.idTypeMap[pAction->ioId] == "NEO") {
+//            rp2040.idleOtherCore();
             actionCore1Msgs.queueEnqueue(pAction);
+//            rp2040.resumeOtherCore();
         } else {
             actionCore0Msgs.queueEnqueue(pAction);
         }
     }
+
 
 }
 
@@ -156,6 +159,7 @@ Action *deserializeAction(const JsonObject &action, int nowTime) {
     if (action.containsKey("an")) pAction->animationId = action.getMember("an").as<int>();
     if (action.containsKey("ssm")) pAction->staticSubMode = action.getMember("ssm").as<int>();
     if (action.containsKey("s")) pAction->speed = action.getMember("s").as<int>();
+    if (action.containsKey("i")) pAction->i = action.getMember("i").as<int>();
 
     if (action.containsKey("t")) pAction->time = action.getMember("t").as<int>();
     if (action.containsKey("st")) pAction->stepTime = action.getMember("st").as<int>();

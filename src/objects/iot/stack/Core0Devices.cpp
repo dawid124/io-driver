@@ -122,6 +122,7 @@ void Core0Devices::processRgbwAction(Action *action, RgbwLight &light) {
     int steps = (int) action->time / stepTime;
 
     if (steps <= 1) {
+//        light.color(color.r, color.g, color.b, color.w, color.ww);
         RgbwChange(color, steps, &light, 0).nextStep();
         return;
     }
@@ -135,7 +136,6 @@ void Core0Devices::processBlindAction(Action *action, Blind &blind) {
     if (blind.task != (uintptr_t)(NULL)) {
         blindTimer.cancel(blind.task);
     }
-
 
     auto *blindCleanPtr = new BlindClean(&blind);
     if (action->action == "UP") {

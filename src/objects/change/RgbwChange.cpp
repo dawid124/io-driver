@@ -32,6 +32,11 @@ bool RgbwChange::nextStep() {
     wVal = wVal + wStep;
     wwVal = wwVal + wwStep;
 
+//    Serial.println("RgbwChange: id:" + String(light->id)
+//    + " r: " + String(rVal)
+//    + " g: " + String(gVal)
+//    + " b: " + String(bVal)
+//    + " w: " + String(wVal));
 
     light->color(rVal, gVal, bVal, wVal, wwVal);
     steps--;

@@ -83,18 +83,20 @@ void setup() {
 }
 
 void loop() {
-    int startMicros = micros();
     mqttService();
     core0Devices.service();
 
     if (actionCore0Msgs.rear > 0) {
+        Serial.println("actionCore0Msgs: " + String(actionCore0Msgs.rear));
         while (actionCore0Msgs.rear > 0) {
             Action *pAction = actionCore0Msgs.queueDequeue();
             core0Devices.process(pAction);
             delete pAction;
         }
     }
+
     if (actionCore1Msgs.rear > 0) {
+        Serial.println("actionCore1Msgs: " + String(actionCore1Msgs.rear));
         while (actionCore1Msgs.rear > 0) {
             Action* pAction = actionCore1Msgs.queueDequeue();
 
@@ -103,12 +105,30 @@ void loop() {
         }
     }
 
+
     processSensors();
     core1Devices.service();
-    int endMicros = micros();
-//    Serial.println("cycle time: " + String(endMicros - startMicros));
 }
-
+//void setup1() {
+//
+//}
+//void loop1() {
+//    core1Devices.service();
+//
+//    rp2040.idleOtherCore();
+//
+//    if (actionCore1Msgs.rear > 0) {
+//        while (actionCore1Msgs.rear > 0) {
+//            Action* pAction = actionCore1Msgs.queueDequeue();
+//
+//            core1Devices.process(pAction);
+//            delete pAction;
+//        }
+//    }
+//
+//    rp2040.resumeOtherCore();
+//}
+//
 
 void processSensors() {
     for (auto &sensor : core0Devices.motionSensors) {
