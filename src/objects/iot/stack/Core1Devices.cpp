@@ -33,7 +33,7 @@ void Core1Devices::process(Action *action) {
         fx.setMode(action->animationId);
     }
 
-    if (action->animationId == 0 && action->staticSubMode == 0) {
+    if (action->animationId == 0 && action->staticSubMode == 1) {
         int stepTime = 30;
         if (action->stepTime > 0) {
             stepTime = action->stepTime;

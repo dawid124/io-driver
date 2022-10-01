@@ -13,7 +13,7 @@ void Core0Devices::init() {
 
 void Core0Devices::initializeExpander(SX1509 &expander, byte address) {
     if (expander.begin(address)) {
-//        expander.clock(INTERNAL_CLOCK_2MHZ, 5); // 6, 5, 4
+        expander.clock(INTERNAL_CLOCK_2MHZ, 5); // 6, 5, 4
         Logger::printlnCore0("Successful initialize ioExpander on address: " + String(address));
     } else {
         Logger::printlnCore0("Not initialize ioExpander on address: " + String(address));
