@@ -27,6 +27,7 @@ unsigned long resetTimeout;
 #define RESENT_TIMEOUT   3000
 #define RESET_TIMEOUT   15000
 
+
 void init() {
     Logger::printlnCore0("\nStart Initializing ");
     resetTimeout = millis() + RESET_TIMEOUT;
@@ -54,7 +55,6 @@ void init() {
         }
         mqttService();
     }
-
     pinMode(LED_BUILTIN, OUTPUT);
 
 }

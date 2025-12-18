@@ -5,6 +5,7 @@
 #ifndef IO_DRIVER_RGBLIGHT_H
 #define IO_DRIVER_RGBLIGHT_H
 
+#include <Wire.h>
 #include <SparkFunSX1509.h>
 #include <objects/iot/IThings.h>
 #include "Arduino.h"

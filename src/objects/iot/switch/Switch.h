@@ -6,6 +6,7 @@
 #define IO_DRIVER_SWITCH_H
 
 #include "Arduino.h"
+#include <Wire.h>
 #include <SparkFunSX1509.h>
 #include <objects/iot/IThings.h>
 

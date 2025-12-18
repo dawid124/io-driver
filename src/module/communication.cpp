@@ -7,6 +7,7 @@
 #include "communication.h"
 
 #define ETH_RESET_PIN 20
+#define RESET_TIMEOUT 15000
 
 const char *ACTION_TOPIC = STR(MQTT_ACTION_TOPIC);
 const char *SYNC_TOPIC = STR(MQTT_SYNC_TOPIC);
@@ -26,6 +27,7 @@ Core1Devices core1Devices;
 DriverState driverState;
 
 int timeMillis = millis();
+unsigned long resetTimeout;
 
 Action *deserializeAction(const JsonObject &action, int nowTime);
 
@@ -34,6 +36,8 @@ void processActions(const JsonArray &actions);
 SX1509 *parseLocation(const JsonObject &action);
 
 void setupMqtt() {
+    resetTimeout = millis() + RESET_TIMEOUT;
+
     Logger::printlnCore0("Start MQTTClient init ");
     Logger::printCore0(DEVICE_NAME_STR);
 
@@ -51,8 +55,8 @@ void setupMqtt() {
     byte mac[6];
     parseBytes(macStr, '-', mac, 6, 16);
 
-//    Ethernet.begin(mac, IPAddress(192, 168, 0, 121));
-    Ethernet.begin(mac);
+//    Ethernet.begin(mac);
+    Ethernet.begin(mac, ip);
 
     Logger::printlnCore0(F("Connected! IP address: "));
     Logger::printCore0(Ethernet.localIP());
@@ -71,6 +75,11 @@ void reconnectMqtt() {
     while (!client.connected()) {
         Logger::printlnCore0("Attempting MQTT connection to ");
         Logger::printCore0(STR(MQTT_SERVER));
+
+        if ((millis() > resetTimeout)) {
+            rp2040.reboot();
+            continue;
+        }
 
         if (client.connect(DEVICE_NAME_STR)) {
             Logger::printlnCore0("...connected");

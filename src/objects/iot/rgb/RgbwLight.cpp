@@ -42,8 +42,8 @@ RgbwLight::RgbwLight(const String &id, SX1509 *io, int pinR, int pinG, int pinB,
             analogWrite(pinW, 255);
         }
         if (pinWw >= 0) {
-            io->pinMode(pinWw, ANALOG_OUTPUT);
-            io->analogWrite(pinWw, 255);
+            pinMode(pinWw, ANALOG_OUTPUT);
+            analogWrite(pinWw, 255);
         }
     }
 }

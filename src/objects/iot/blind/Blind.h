@@ -5,9 +5,10 @@
 #ifndef IO_DRIVER_BLIND_H
 #define IO_DRIVER_BLIND_H
 
+#include "Arduino.h"
+#include <Wire.h>
 #include <SparkFunSX1509.h>
 #include <objects/iot/IThings.h>
-#include "Arduino.h"
 
 class Blind : public IThings {
 public:
