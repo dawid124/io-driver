@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <Arduino.h>
-#include "rp2040.h"
+// #include "rp2040.h"  // Commented out - causes CMSIS conflicts
 #include <Wire.h>
 #include <SPI.h>
 #include "EthernetENC.h"

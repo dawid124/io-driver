@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(pio --version:*)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "Bash(pio run)"
     ],
     "deny": [],
     "ask": []

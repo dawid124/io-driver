@@ -6,6 +6,7 @@
 #define IO_DRIVER_CORE1DEVICES_H
 
 #include <Arduino.h>
+#include <vector>
 #include <WS2812FX.h>
 #include <objects/comunication/Action.h>
 #include "objects/iot/neo/NeoLight.h"

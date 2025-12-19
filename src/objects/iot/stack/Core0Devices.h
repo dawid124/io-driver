@@ -6,7 +6,7 @@
 #define IO_DRIVER_CORE0DEVICES_H
 
 #include <Arduino.h>
-
+#include <vector>
 
 #include <Wire.h>           // Include the I2C library (required)
 #include <SparkFunSX1509.h>
@@ -18,7 +18,7 @@
 #include "objects/iot/rgb/RgbLight.h"
 #include "objects/iot/rgb/RgbwLight.h"
 #include "defines.h"
-#include "./module/logger.h"
+#include "module/logger.h"
 #include <map>
 #include <objects/iot/blind/Blind.h>
 #include <objects/change/BlindClean.h>

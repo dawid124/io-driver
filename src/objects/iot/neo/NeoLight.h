@@ -6,6 +6,7 @@
 #define IO_DRIVER_NEOLIGHT_H
 
 #include "Arduino.h"
+#include <vector>
 #include <objects/iot/IThings.h>
 #include <WS2812FX.h>
 

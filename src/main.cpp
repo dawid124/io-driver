@@ -23,14 +23,11 @@ void moveCore1Msgs();
 //}
 
 unsigned long reconnectTimeout;
-unsigned long resetTimeout;
 #define RESENT_TIMEOUT   3000
-#define RESET_TIMEOUT   15000
 
 
 void init() {
     Logger::printlnCore0("\nStart Initializing ");
-    resetTimeout = millis() + RESET_TIMEOUT;
     Logger::printlnCore0(STR(DEVICE_NAME));
 
     Wire.begin();
@@ -43,10 +40,6 @@ void init() {
 
 
     while (driverState != WORKING) {
-        if ((millis() > resetTimeout)) {
-            rp2040.reboot();
-            continue;
-        }
 
         if ((millis() > reconnectTimeout) || (reconnectTimeout == 0)) {
             Logger::printlnCore0("Waiting for config...");
