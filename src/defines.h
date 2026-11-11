@@ -12,7 +12,7 @@
 #include <ArduinoJson.h>
 #include "pico/multicore.h"
 
-#define APP_DEBUG
+// #define APP_DEBUG
 
 
 
